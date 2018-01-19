@@ -1,0 +1,28 @@
+{
+  "name": "leancloud-msg-react",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "lodash": "^4.17.4",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.0.17"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "benchmark": "babel-node benchmark.js",
+    "install-deps": "npm install --registry https://registry.npmjs.org -d",
+    "deploy:demo": "rsync -avt --delete ./build/ ubuntu@54.223.42.98:/home/ubuntu/leancloud-msg-react-demo/",
+    "deploy:benchmark": "rsync -avt --delete --exclude node_modules/ ./ ubuntu@54.223.42.98:/home/ubuntu/leancloud-msg-react/",
+    "deploy:benchmark:us": "rsync -avt --delete --exclude node_modules/ ./ ubuntu@54.209.104.168:/home/ubuntu/leancloud-msg-react/",
+    "deploy:benchmark:sgp": "rsync -avt --delete --exclude node_modules/ ./ ubuntu@54.179.144.142:/home/ubuntu/leancloud-msg-react/",
+    "deploy:lib": "cd .. && tar -czvf app.tar.gz lib node_modules package.json && scp app.tar.gz ubuntu@54.209.104.168:/home/ubuntu/ && ssh ubuntu@54.209.104.168 'rm -rf aoc-signal && mkdir -p aoc-signal && tar -xzvf app.tar.gz -C ~/aoc-signal'"
+  }
+}

@@ -1,0 +1,292 @@
+import React, { Component } from 'react';
+import './App.css';
+import { SignalService } from 'aoc-signal';
+import _ from 'lodash';
+import { TextMessage } from 'leancloud-realtime';
+import {formatTime, encodeHTML, messageDelay, addSample, getSample } from './utils';
+import roomProps from './roomProps';
+import leancloudConfig from './leancloud/leancloud_config';
+
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      userName: 'Guest1',
+      password: '123123',
+      roomProps: roomProps,
+      msgToSend: '',
+      msgInterval: 1000,
+      logs: [],
+      samples: {
+        send: {
+          cnt: 0,
+          avg: 0
+        },
+        recv: {
+          cnt: 0,
+          avg: 0
+        },
+        total: {
+          cnt: 0,
+          avg: 0
+        }
+      }
+    };
+    this.signalService = new SignalService(leancloudConfig);
+    this.lastMessageSendTime = 0;
+  }
+
+  login = () => {
+    this.showLog(`${this.state.userName} 正在登录...`);
+    const callbacks = {
+      onDisconnect: () => {
+        this.showLog('[disconnect] 服务器连接已断开');
+      },
+      onOffline: () => {
+        this.showLog('[offline] 离线（网络连接已断开）');
+      },
+      onOnline: () => {
+        this.showLog('[online] 已恢复在线');
+      },
+      onSchedule: (attempt, time) => {
+        this.showLog('[schedule] ' + time / 1000 + 's 后进行第 ' + (attempt + 1) + ' 次重连');
+      },
+      onRetry: (attempt) => {
+        this.showLog('[retry] 正在进行第 ' + (attempt + 1) + ' 次重连');
+      },
+      onReconnect: () => {
+        this.showLog('[reconnect] 重连成功');
+      },
+      onReconnecterror: () => {
+        this.showLog('[reconnecterror] 重连失败');
+      },
+      // onMessage: this.onMessage,
+    }
+    this.signalService.login(this.state.userName, callbacks)
+      .then(client => {
+        const roomProps = this.state.roomProps;
+        this.showLog(`${this.state.userName} 登录成功`);
+        this.showLog(`${this.state.userName} 加入房间 ${roomProps.name}...`);
+        const callbacks = {
+          onMessage: this.onMessage,
+          // onMessageHistory: this.onMessageHistory,
+          onReceipt: this.onReceipt,
+          onDelivered: this.onDelivered,
+        };
+        this.signalService.joinRoom(roomProps, callbacks)
+          .then((conversation) => {
+            this.showLog(`${this.state.userName} 加入房间 ${roomProps.name} 成功`);
+            this.showLog(`当前房间人数${conversation.members.length}, 可以开始聊天 [${conversation.members.join(',')}]`);
+            // conversation.count().then((count) => {
+            //   this.showLog(`${this.state.userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${count}, 可以开始聊天`);
+            // });
+          });
+      })
+  }
+
+  onMessage = (message) => {
+    this.showMsg(message);
+  }
+
+  onReceipt = ({message}) => {
+    const delayRecv = message.deliveredAt - message.timestamp;
+    this.updateSample('recv2', delayRecv);
+    const recv2 = getSample('recv2');
+    console.log(`onReceipt ${message.text}, onDeliveredAt - onTimestamp = ${delayRecv}, cnt=${recv2.cnt}, avg=${recv2.avg.toFixed(0)}`);
+  }
+
+  onDelivered = () => {
+    this.signalService.conversation.fetchReceiptTimestamps()
+      .then((conversation) => {
+        if(this.lastMessageSendTime > 0) {
+          const delay = conversation.lastDeliveredAt.getTime() - this.lastMessageSendTime;
+          this.updateSample('total', delay);
+          console.log(`onDelivered delay=${delay}`);
+          this.lastMessageSendTime = 0;
+        }
+        console.log(conversation.lastDeliveredAt);
+      });
+  }
+
+  onMessageHistory = (history) => {
+    const msgCnt = history.length;
+    for(let i=msgCnt-1; i>=0; i--) {
+      this.showMsg(history[i], true);
+    }
+  }
+
+  sendMsg = () => {
+    if(this.state.msgToSend.length === 0) {
+      alert(`请输入文字`);
+    } else {
+      this.signalService.sendMsg(this.state.msgToSend)
+        .then(message => {
+          this.setState({
+            msgToSend: '',
+          });
+          this.showMsg(message);
+        });
+    }
+  }
+
+  autoSendMsg = () => {
+    if(!this.signalService.isLoggedIn()) {
+      alert('你还没有登录');
+      return;
+    }
+    this.autoSendTimer = setInterval(() => {
+      const msg = `msg content ${this.state.samples.send.cnt + 1}`;
+      this.signalService.sendMsg(msg)
+        .then(message => {
+          this.showMsg(message);
+        });
+    }, this.state.msgInterval);
+  }
+
+  autoSendStop = () => {
+    if(this.autoSendTimer > 0) {
+      clearInterval(this.autoSendTimer);
+      this.autoSendTimer = 0;
+    }
+  }
+
+  showMsg = (message, isBefore) => {
+    let from = message.from;
+    const isSelf = message.from === this.state.userName;
+    if(isSelf) {
+      from = '自己';
+    }
+
+    if(message instanceof TextMessage) {
+      if(isSelf) {
+        this.updateSample('send', message.sendDelay);
+        this.lastMessageSendTime = message.timestamp;
+        this.showLog(`(${formatTime(message.timestamp)}) ${message.sendDelay}ms 自己:`, `${encodeHTML(message.text)}`, isBefore)
+      } else {
+        const delay = messageDelay(message);
+        this.updateSample('recv', delay);
+        this.showLog(`(${formatTime(Date.now())}) ${delay}ms ${encodeHTML(from)}:`, `${encodeHTML(message.text)}`, isBefore);
+      }
+    } else {
+      console.warn(`unsupported message type`);
+    }
+  }
+
+  showLog = (msg, data, isBefore) => {
+    const item = [msg];
+    if (data) {
+      item.push(data);
+    }
+    const logs = this.state.logs;
+    if (isBefore) {
+      logs.unshift(item);
+    } else {
+      logs.push(item);
+    }
+    // console.log(`scrollTop: ${this.refs.logPanel.scrollTop}, scrollHeight: ${this.refs.logPanel.scrollHeight}`);
+    this.setState({
+      logs: logs,
+    });
+    this.refs.logPanel.scrollTop = this.refs.logPanel.scrollHeight;
+  }
+
+  renderLogs = () => {
+    return (
+      <div id="print-wall" className="print-wall" ref="logPanel">
+        {
+          this.state.logs.map((log, index) => {
+            if(_.isArray(log) && log.length > 1) {
+              return (<p key={`log_${index}`}>{log[0]} <span className="strong">{log[1]}</span></p>)
+            } else {
+              return (<p key={`log_${index}`}>{log[0]}</p>);
+            }
+          })
+        }
+      </div>
+    );
+  }
+
+  updateInputtext = (evt, key) => {
+    this.setState({
+      [key]: evt.target.value
+    })
+  }
+
+  updateRoomProps = (evt, key) => {
+    this.setState({
+      roomProps: {
+        [key]: evt.target.value
+      }
+    })
+  }
+
+  updateSample = (key, value) => {
+    addSample(key, value);
+    this.setState({
+      samples: {
+        ...this.state.samples,
+        [key]: getSample(key),
+      }
+    });
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <h1 className="App-title">Leancloud React Demo</h1>
+        </header>
+
+        <div className="item">
+          <label>
+            用户名
+            <input autoFocus id="input-name" type="text"
+                   value={this.state.userName}
+                   onChange={evt => this.updateInputtext(evt, 'userName')}
+            />
+          </label>
+          <label>
+            房间名
+            <input autoFocus id="input-room" type="text"
+                   value={this.state.roomProps.name}
+                   onChange={evt => this.updateRoomProps(evt, 'name')}
+            />
+          </label>
+          <div id="login-btn" className="btn" onClick={this.login}>登录</div>
+        </div>
+        <div className="stats">
+          Message Send Count: {this.state.samples.send.cnt}, Average Delay: {this.state.samples.send.avg.toFixed(0)}ms (发送成功时间 - 消息发出时间)
+        </div>
+        <div className="stats">
+          Message Recv Count: {this.state.samples.recv.cnt}, Average Delay: {this.state.samples.recv.avg.toFixed(0)}ms (接收方收到时间 - msg.timestamp)
+        </div>
+        <div className="stats">
+          Message Count: {this.state.samples.total.cnt}, Average Delay: {this.state.samples.total.avg.toFixed(0)}ms (onDelivered时间 - msg.timestamp)
+        </div>
+        <div className="item">
+          {this.renderLogs()}
+        </div>
+        <div className="item">
+          <label>输入信息：</label>
+          <input id="input-send" className="input-send" type="text"
+                 value={this.state.msgToSend}
+                 onChange={evt => this.updateInputtext(evt, 'msgToSend')}
+          />
+          <div id="send-btn" className="btn" onClick={this.sendMsg}>发送</div>
+        </div>
+        <div className="item">
+          <label>时间间隔(毫秒)：</label>
+          <input id="input-send" className="input-send-interval" type="text"
+                 value={this.state.msgInterval}
+                 onChange={evt => this.updateInputtext(evt, 'msgInterval')}
+          />
+          <div id="auto-send-btn" className="btn" onClick={this.autoSendMsg}>自动发送</div>
+          <div id="auto-send-stop-btn" className="btn" onClick={this.autoSendStop}>停止</div>
+        </div>
+
+      </div>
+    );
+  }
+}
+
+export default App;
