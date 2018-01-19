@@ -1,15 +1,14 @@
 {
-  "name": "aoc-signal",
+  "name": "aoc-signal-cli",
   "version": "1.0.0",
-  "description": "This is a RTC library based on leancloud js-realtime-sdk.",
-  "main": "./lib/index.js",
+  "description": "This is a cli application to do leancloud benchmark.",
+  "main": "./bin/leancloud-benchmark.js",
   "scripts": {
     "clean": "rimraf lib",
-    "test": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-register --recursive",
+    "test": "",
     "test:watch": "npm test -- --watch",
-    "test:examples": "node examples/",
     "cover": "cross-env BABEL_ENV=commonjs istanbul cover _mocha -- --compilers js:babel-register --recursive",
-    "lint": "eslint src test",
+    "lint": "eslint src",
     "build": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
     "prepublish": "npm run clean && npm run lint && npm run test && npm run build",
     "benchmark:receiver": "babel-node benchmark/receiver.js",
@@ -17,38 +16,23 @@
   },
   "files": [
     "lib",
-    "src"
+    "src",
+    "bin"
   ],
   "bin": {
     "leancloud-benchmark": "./src/bin/index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Travelport-Ukraine/npm-module-boilerplate.git"
-  },
-  "keywords": [
-    "boilerplate",
-    "npm",
-    "module",
-    "node",
-    "javascript"
-  ],
   "author": "byrne.liang@alo7.com",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Travelport-Ukraine/npm-module-boilerplate/issues"
-  },
-  "homepage": "https://github.com/Travelport-Ukraine/npm-module-boilerplate#readme",
+  "homepage": "",
   "dependencies": {
-    "leancloud-realtime": "next"
+    "aoc-signal": "*"
   },
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-cli": "^6.14.0",
     "babel-eslint": "^7.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-preset-es2015": "^6.14.0",
-    "babel-preset-stage-2": "^6.13.0",
+    "babel-preset-env": "^1.6.1",
     "chai": "^3.5.0",
     "cross-env": "^3.0.0",
     "eslint": "^3.6.0",
