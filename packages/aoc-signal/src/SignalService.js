@@ -2,6 +2,9 @@
  * Created by byrne on 19/01/2018.
  */
 import { Realtime, TextMessage } from 'leancloud-realtime';
+import d from 'debug';
+
+const debug = d('signal:SignalService');
 
 export default class SignalService {
   /**
@@ -23,9 +26,9 @@ export default class SignalService {
       _cfg.RTMServers = process.env.SERVER;
     }
     this.service = new Realtime(_cfg);
-    console.log(`Leancloud AppId: ${_cfg.appId}`);
-    console.log(`Leancloud AppKey: ${_cfg.appKey}`);
-    console.log(`RTMServers: '${_cfg.RTMServers}'`);
+    debug(`Leancloud AppId: ${_cfg.appId}`);
+    debug(`Leancloud AppKey: ${_cfg.appKey}`);
+    debug(`RTMServers: '${_cfg.RTMServers}'`);
     this.client = null;
     this._conversation = null;
     this.msgIter = null;
@@ -55,37 +58,37 @@ export default class SignalService {
           onReconnecterror,
           onMessage
         } = callbacks;
-        console.log(`create client success`);
+        debug(`create client success`);
         this.client.on('disconnect', function() {
-          console.info('[disconnect] 服务器连接已断开');
+          debug('[disconnect] 服务器连接已断开');
           if(onDisconnect) onDisconnect();
         });
         this.client.on('offline', function() {
-          console.info('[offline] 离线（网络连接已断开）');
+          debug('[offline] 离线（网络连接已断开）');
           if(onOffline) onOffline();
         });
         this.client.on('online', function() {
-          console.info('[online] 已恢复在线');
+          debug('[online] 已恢复在线');
           if(onOnline) onOnline();
         });
         this.client.on('schedule', function(attempt, time) {
-          console.info(`[schedule] ${time / 1000}s 后进行第 ${attempt + 1} 次重连`);
+          debug(`[schedule] ${time / 1000}s 后进行第 ${attempt + 1} 次重连`);
           if(onSchedule) onSchedule(attempt, time);
         });
         this.client.on('retry', function(attempt) {
-          console.info(`[retry] 正在进行第 ${attempt + 1} 次重连`);
+          debug(`[retry] 正在进行第 ${attempt + 1} 次重连`);
           if(onRetry) onRetry(attempt);
         });
         this.client.on('reconnect', function() {
-          console.info('[reconnect] 重连成功');
+          debug('[reconnect] 重连成功');
           if(onReconnect) onReconnect();
         });
         this.client.on('reconnecterror', function() {
-          console.info('[reconnecterror] 重连失败');
+          debug('[reconnecterror] 重连失败');
           if(onReconnecterror) onReconnecterror();
         });
         this.client.on('message', function(message, conversation) {
-          console.info(`Message received: ${message.text} from ${conversation.name}`);
+          debug(`Message received: '${message.text}' from ${conversation.name}`);
           if(onMessage) onMessage(message, conversation);
         });
         return this.client;
@@ -104,10 +107,10 @@ export default class SignalService {
         if (conversation) {
           return conversation;
         } else {
-          console.info(`不存在这个room ${id}，创建一个`);
+          debug(`不存在这个room ${id}，创建一个`);
           return this.client.createConversation(restRoomProps)
             .then(function(conversation) {
-              console.info('创建新 Room 成功，id 是：', conversation.id);
+              debug('创建新 Room 成功，id 是：', conversation.id);
               return conversation;
             });
         }

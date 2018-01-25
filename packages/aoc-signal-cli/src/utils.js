@@ -38,24 +38,3 @@ export function createLink(url) {
   return `<a target="_blank" href="' ${encodeHTML(url)} '">' + encodeHTML(url) + '</a>`;
 }
 
-const samples = {};
-export function addSample(key, value) {
-  let sample;
-  if(samples.hasOwnProperty(key)) {
-    sample = samples[key];
-  } else {
-    sample = {
-      sum: 0,
-      cnt: 0,
-      avg: 0,
-    };
-    samples[key] = sample;
-  }
-  sample.sum += value;
-  sample.cnt += 1;
-  sample.avg = sample.sum / sample.cnt;
-}
-
-export function getSample(key) {
-  return samples[key];
-}
