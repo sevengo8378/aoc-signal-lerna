@@ -1,6 +1,6 @@
 {
   "name": "aoc-signal",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "This is a RTC library based on leancloud js-realtime-sdk.",
   "main": "./lib/index.js",
   "scripts": {
