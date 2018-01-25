@@ -11,7 +11,7 @@ export const eventBegin = (stats, key) => {
     stats[key] = {};
   }
   stats[key].begin = Date.now();
-}
+};
 
 export const eventEnd = (stats, key) => {
   if(!stats[key]) {
@@ -21,11 +21,11 @@ export const eventEnd = (stats, key) => {
 
   stats[key].end = Date.now();
   stats[key].cost = stats[key].end - stats[key].begin;
-}
+};
 
 export const eventCost = (stats, key) => {
   return stats[key] && stats[key].cost;
-}
+};
 
 const samples = {};
 export function addSample(key, value) {

@@ -81,7 +81,7 @@ const onDelivered = () => {
         lastMessageSendTime = 0;
       }
     });
-}
+};
 
 const showMsg = (message, isBefore) => {
   let from = message.from;
@@ -134,7 +134,7 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
       target.sendMsg(`msg ${times}`)
         .then((message) => {
           lastMessageSendTime = message.timestamp;
-          const delay = (Date.now() - begin)/2;
+          const delay = (Date.now() - begin) / 2;
           d(`send ${times} message, delay=${delay}`);
           addSample('send', delay);
         });
