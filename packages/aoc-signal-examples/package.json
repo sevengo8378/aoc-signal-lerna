@@ -1,6 +1,6 @@
 {
-  "name": "leancloud-msg-react",
-  "version": "0.1.0",
+  "name": "aoc-signal-examples",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "aoc-signal": "*",
