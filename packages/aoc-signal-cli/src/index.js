@@ -21,6 +21,7 @@ program
   .option('-e --env <env>', 'Specify environment', /^(dev|prod)$/i, 'dev')
   .option('-u --uname <uname>', 'Specify user name', 'Guest1')
   .option('-l --location <location>', 'Specify user location', 'china')
+  .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
 d(`role: ${program.role}`);
@@ -57,6 +58,9 @@ const callbacks = {
 };
 
 d('benchmark start');
+if(program.zx) {
+  process.env.SERVER = 'wss://rtm-global-in.leancloud.cn';
+}
 const signalService = new SignalService(leancloudConfig);
 
 const onMessage = (message) => {
@@ -72,8 +76,8 @@ const onDelivered = () => {
     .then((conversation) => {
       if(lastMessageSendTime > 0) {
         const delay = (conversation.lastDeliveredAt.getTime() - lastMessageSendTime) / 2;
-        addSample('deliver', delay);
         d(`onDelivered delay=${delay}`);
+        addSample('deliver', delay);
         lastMessageSendTime = 0;
       }
     });
