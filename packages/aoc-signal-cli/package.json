@@ -22,7 +22,7 @@
     "bin"
   ],
   "bin": {
-    "leancloud-benchmark": "./src/bin/index.js"
+    "aoc-signal-cli": "./bin/index.js"
   },
   "author": "byrne.liang@alo7.com",
   "license": "MIT",
