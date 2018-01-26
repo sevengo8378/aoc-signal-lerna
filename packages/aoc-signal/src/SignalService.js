@@ -99,22 +99,28 @@ export default class SignalService {
     if(!this.client) {
       return Promise.reject('err_not_login');
     }
-    const {
-      id, ...restRoomProps
-    } = roomProps;
-    return this.client.getConversation(id)
-      .then((conversation) => {
-        if (conversation) {
-          return conversation;
-        } else {
-          debug(`不存在这个room ${id}，创建一个`);
-          return this.client.createConversation(restRoomProps)
-            .then(function(conversation) {
-              debug('创建新 Room 成功，id 是：', conversation.id);
-              return conversation;
-            });
-        }
+    // const {
+    //   id, ...restRoomProps
+    // } = roomProps;
+    // debug(`restRoomProps = ${JSON.stringify(restRoomProps, null, 2)}`);
+    return this.client.createConversation(roomProps)
+      .then(function(conversation) {
+        debug(`创建新 Room 成功: ${JSON.stringify(conversation, null, 2)}`);
+        return conversation;
       })
+    // return this.client.getConversation(id)
+    //   .then((conversation) => {
+    //     if (conversation) {
+    //       return conversation;
+    //     } else {
+    //       debug(`不存在这个room ${id}，创建一个`);
+    //       return this.client.createConversation(restRoomProps)
+    //         .then(function(conversation) {
+    //           debug('创建新 Room 成功，id 是：', conversation.id);
+    //           return conversation;
+    //         });
+    //     }
+    //   })
       .then(conversation => {
         this._conversation = conversation;
         this.msgIter = conversation.createMessagesIterator();

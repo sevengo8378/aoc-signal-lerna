@@ -30,6 +30,8 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "commander": "^2.13.0",
     "debug": "^3.1.0",
+    "es6-promise": "^4.2.4",
+    "isomorphic-fetch": "^2.2.1",
     "leancloud-realtime": "next"
   },
   "devDependencies": {

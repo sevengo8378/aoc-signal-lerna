@@ -12,6 +12,7 @@ import roomProps from './roomProps';
 import { SignalService } from 'aoc-signal';
 import leancloudConfig from './leancloud_config';
 import { eventBegin, eventEnd, eventCost, addSample, getSample } from './utils/time_stats';
+import { logstash } from './logstash';
 
 const d = debug('app:index');
 
@@ -19,14 +20,17 @@ program
   .version(packageJson.version)
   .option('-r --role <role>', 'Specify if message sender or receiver', /^(send|recv)$/i, 'send')
   .option('-e --env <env>', 'Specify environment', /^(dev|prod)$/i, 'dev')
-  .option('-u --uname <uname>', 'Specify user name', 'Guest1')
+  // .option('-u --uname <uname>', 'Specify user name', 'Guest1')
+  .option('-r --room <room>', 'Specify room name', 'testroom')
   .option('-l --location <location>', 'Specify user location', 'china')
+  .option('-l --count <count>', 'Specify message count to send', '10')
   .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
 d(`role: ${program.role}`);
 
-const userName = program.uname;
+const userName = program.role === 'send' ? `${program.room}_s` : `${program.room}_r`;
+roomProps.members = [`${program.room}_s`, `${program.room}_r`];
 const stats = {
   msgCnt: 0,
   avgDelay: 0,
@@ -72,11 +76,12 @@ const onReceipt = ({message}) => {
 };
 
 const onDelivered = () => {
+  d(`onDelivered`);
   signalService.conversation.fetchReceiptTimestamps()
     .then((conversation) => {
       if(lastMessageSendTime > 0) {
         const delay = (conversation.lastDeliveredAt.getTime() - lastMessageSendTime) / 2;
-        d(`onDelivered delay=${delay}`);
+        d(`deliver delay=${delay}`);
         addSample('deliver', delay);
         lastMessageSendTime = 0;
       }
@@ -120,8 +125,11 @@ signalService.login(userName, callbacks)
         eventEnd(stats, 'joinRoom');
         d(`${userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${conversation.members.length}, 可以开始聊天`);
         if(program.role === 'send') {
-          sendMsgOnInterval(signalService, 2000, 10);
+          sendMsgOnInterval(signalService, 2000, program.count);
         }
+      })
+      .catch((err) => {
+        d(`joinRoom error: ${err.toString()}`);
       });
   });
 
@@ -143,14 +151,15 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
 
       // 等待5秒后收集日志,保证已经收到receipt
       setTimeout(() => {
-        const a2sCost = getSample('send').avg.toFixed(0);
-        const s2bCost = getSample('deliver').avg.toFixed(0);
-        logstash({
+        const a2sCost = parseInt(getSample('send').avg.toFixed(0), 10);
+        const s2bCost = getSample('deliver') ? parseInt(getSample('deliver').avg.toFixed(0), 10) : 0;
+        collectReport({
           login: eventCost(stats, 'login'),
           joinRoom: eventCost(stats, 'joinRoom'),
           sendCostAvg: a2sCost,
           deliverCostAvg: s2bCost,
-          netDelay: parseInt(a2sCost, 10) + parseInt(s2bCost, 10),
+          netDelay: a2sCost + s2bCost,
+          msgCount: parseInt(program.count, 10),
         });
       }, 5000);
     }
@@ -158,7 +167,7 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
   }, interval);
 };
 
-const logstash = (info) => {
+const collectReport = (info) => {
   const log = {
     ...info,
     env: program.env,
@@ -166,6 +175,20 @@ const logstash = (info) => {
     location: program.location,
   };
   d(`logstash: ${JSON.stringify(log, null, 2)}`);
+  logstash([log])
+    .then((response) => {
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error("Bad response from server");
+      }
+      return response.json();
+    })
+    .then(() => {
+      d('benchmark complete.');
+      process.exit(0);
+    })
+    .catch(() => {
+
+    });
 };
 
 
