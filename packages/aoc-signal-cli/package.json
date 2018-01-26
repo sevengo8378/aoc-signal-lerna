@@ -12,9 +12,7 @@
     "build": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
     "prepare": "npm run lint",
     "prepublish": "npm run clean && npm run build",
-    "benchmark": "DEBUG=app:*,signal:* babel-node src/index.js",
-    "benchmark:receiver": "babel-node benchmark/receiver.js",
-    "benchmark:receiver:zx": "SERVER=wss://rtm-global-in.leancloud.cn babel-node benchmark/receiver.js"
+    "benchmark": "DEBUG=app:*,signal:* babel-node src/index.js"
   },
   "files": [
     "lib",
