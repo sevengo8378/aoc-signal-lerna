@@ -1,6 +1,6 @@
 {
   "name": "aoc-signal-cli",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "This is a cli application to do leancloud benchmark.",
   "main": "./bin/leancloud-benchmark.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "bin"
   ],
   "bin": {
-    "aoc-signal-cli": "./bin/index.js"
+    "benchmark-leancloud": "./bin/index.js"
   },
   "author": "byrne.liang@alo7.com",
   "license": "MIT",
