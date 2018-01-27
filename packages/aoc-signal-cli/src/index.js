@@ -23,7 +23,7 @@ program
   // .option('-u --uname <uname>', 'Specify user name', 'Guest1')
   .option('-r --room <room>', 'Specify room name', 'testroom')
   .option('-l --location <location>', 'Specify user location', 'china')
-  .option('-l --count <count>', 'Specify message count to send', '10')
+  .option('-c --count <count>', 'Specify message count to send', '10')
   .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
@@ -169,6 +169,8 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
 
 const collectReport = (info) => {
   const log = {
+    category: 'im_benchmark',
+    formatVersion: 1,
     ...info,
     env: program.env,
     role: program.role,
@@ -178,6 +180,7 @@ const collectReport = (info) => {
   logstash([log])
     .then((response) => {
       if (response.status < 200 || response.status >= 300) {
+        d(`http [${response.status}]`);
         throw new Error("Bad response from server");
       }
       return response.json();
@@ -186,8 +189,8 @@ const collectReport = (info) => {
       d('benchmark complete.');
       process.exit(0);
     })
-    .catch(() => {
-
+    .catch((err) => {
+      d(`benchmark err: ${err}`);
     });
 };
 

@@ -7,8 +7,14 @@ require('isomorphic-fetch');
 export const logstash = (data) => {
   const serverCfg = {
     host: 'http://collector.saybot.com/1',
-    token: 'Aq7XS1JQtfhPQ8ja8L2N94pU',
+    token: '7dHFp289xqqyhy68Ce3X3Rnz',
   };
   const postUrl = `${serverCfg.host}/${serverCfg.token}/data_array`;
-  return fetch(postUrl, data);
+  return fetch(postUrl, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: new Headers({
+      'Content-Type': 'application/json'
+    })
+  });
 };
