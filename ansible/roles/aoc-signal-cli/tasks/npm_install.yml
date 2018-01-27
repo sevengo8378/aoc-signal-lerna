@@ -1,0 +1,9 @@
+---
+
+- name: install "aoc-signal-cli" npm package
+  npm:
+    name: aoc-signal-cli
+    global: yes
+    #executable: "/home/ubuntu/.nvm/versions/node/v8.9.4/bin/npm"
+  environment:
+    PATH: "/home/ubuntu/.nvm/versions/node/v8.9.4/bin:{{ ansible_env.PATH }}"

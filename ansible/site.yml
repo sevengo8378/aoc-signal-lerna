@@ -1,0 +1,18 @@
+---
+
+- hosts: aws-test aws-us aws-sgp
+  remote_user: ubuntu
+  roles:
+  - role: leonidas.nvm
+    become: true
+    become_method: sudo
+    tags: nvm
+    nvm:
+      user: ubuntu
+      version: v0.33.0
+      node_version: '8.9.4'
+      executable: ~/.nvm/versions/node/v8.9.4/bin/npm
+  - aoc-signal-cli
+
+
+

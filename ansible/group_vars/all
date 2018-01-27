@@ -1,0 +1,7 @@
+---
+users:
+  - name: byrne
+    authorized_keys:
+      - roles/common/files/public_keys/byrne@office.pub
+
+

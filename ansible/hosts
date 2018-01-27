@@ -1,0 +1,13 @@
+# hosts
+
+[test]
+192.168.33.10 ansible_user=vagrantj
+
+[aws-test]
+54.223.42.98 ansible_user=ubuntu
+
+[aws-us]
+54.209.104.168 ansible_user=ubuntu
+
+[aws-sgp]
+54.179.144.142 ansible_user=ubuntu
