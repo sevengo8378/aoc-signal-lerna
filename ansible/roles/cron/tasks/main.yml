@@ -1,3 +1,4 @@
 ---
 
 - include: cron_send.yml
+- include: cron_recv.yml

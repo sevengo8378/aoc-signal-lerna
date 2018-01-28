@@ -1,7 +1,14 @@
 ---
 
-- name: "run as message receiver"
-  shell: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role recv --env prod --room 1 >/home/ubuntu/recv.log 2>&1"
+- name: "recv message every 1 hour"
+  shell: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role recv --env prod --room 1 >>/home/ubuntu/recv.log 2>&1 &"
   tags: cron_recv_add
+  async: 3600
+  poll: 2
+
+- name: "remove recv message every 1 hour"
+  shell: "ps aux | grep 'role recv' | head -n 1 | awk '{print $2}' | xargs kill -9"
+  tags: cron_recv_remove
+
 
 
