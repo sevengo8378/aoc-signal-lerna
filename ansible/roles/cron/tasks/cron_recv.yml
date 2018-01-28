@@ -1,0 +1,7 @@
+---
+
+- name: "run as message receiver"
+  shell: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role recv --env prod --room 1 >/home/ubuntu/recv.log 2>&1"
+  tags: cron_recv_add
+
+

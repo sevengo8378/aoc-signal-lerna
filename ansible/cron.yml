@@ -1,0 +1,9 @@
+---
+
+- hosts: aws-test aws-us aws-sgp
+  remote_user: ubuntu
+  roles:
+  - cron
+
+
+

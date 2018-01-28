@@ -1,0 +1,15 @@
+---
+
+- name: "send message every 5 mins"
+  cron:
+    name: "send message every 5 mins"
+    job: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role send --env prod --room 1 >/home/ubuntu/send.log 2>&1"
+    minute: "*/5"
+    state: present
+  tags: cron_send_add
+
+- name: "remove send message every 5 mins"
+  cron:
+    name: "send message every 5 mins"
+    state: absent
+  tags: cron_send_remove

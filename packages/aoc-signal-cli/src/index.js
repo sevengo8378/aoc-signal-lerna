@@ -157,6 +157,7 @@ if(program.role === 'recv' && program.mode === 'single') {
       joinRoom: eventCost(stats, 'joinRoom'),
       connectStats: stats.connectStats,
     });
+    d('benchmark complete.');
     process.exit(0);
   }, 60 * 60 * 1000); // 持续一个小时看是否会断线
 }
