@@ -24,7 +24,7 @@ program
   .option('-r --room <room>', 'Specify room name', 'testroom')
   .option('-l --location <location>', 'Specify user location', 'china')
   .option('-c --count <count>', 'Specify message count to send', '10')
-  .option('-m --mode <mode>', 'Specify test mode', /^(multi|single)/i, 'multi')
+  // .option('-m --mode <mode>', 'Specify test mode', /^(multi|single)/i, 'multi')
   .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
@@ -32,6 +32,8 @@ d(`role: ${program.role}`);
 
 const userName = program.role === 'send' ? `${program.room}_s` : `${program.room}_r`;
 roomProps.members = [`${program.room}_s`, `${program.room}_r`];
+roomProps.name = program.room;
+
 const stats = {
   msgCnt: 0,
   avgDelay: 0,
@@ -150,7 +152,7 @@ signalService.login(userName, callbacks)
       });
   });
 
-if(program.role === 'recv' && program.mode === 'single') {
+if(program.role === 'recv') {
   setTimeout(() => {
     collectReport({
       login: eventCost(stats, 'login'),
