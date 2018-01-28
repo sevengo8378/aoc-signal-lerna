@@ -24,6 +24,7 @@ program
   .option('-r --room <room>', 'Specify room name', 'testroom')
   .option('-l --location <location>', 'Specify user location', 'china')
   .option('-c --count <count>', 'Specify message count to send', '10')
+  .option('-m --mode <mode>', 'Specify test mode', /^(multi|single)/i, 'multi')
   .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
@@ -34,29 +35,45 @@ roomProps.members = [`${program.room}_s`, `${program.room}_r`];
 const stats = {
   msgCnt: 0,
   avgDelay: 0,
+  connectStats: {
+    disconnect: 0,
+    offline: 0,
+    online: 0,
+    schedule: 0,
+    retry: 0,
+    reconnect: 0,
+    reconnecterror: 0,
+  }
 };
 let lastMessageSendTime = 0;
 
 const callbacks = {
   onDisconnect: () => {
+    stats.connectStats.disconnect += 1;
     showLog('[disconnect] 服务器连接已断开');
   },
   onOffline: () => {
+    stats.connectStats.offline += 1;
     showLog('[offline] 离线（网络连接已断开）');
   },
   onOnline: () => {
+    stats.connectStats.online += 1;
     showLog('[online] 已恢复在线');
   },
   onSchedule: (attempt, time) => {
+    stats.connectStats.schedule += 1;
     showLog(`[schedule] ${time / 1000}s 后进行第 ${attempt + 1} 次重连`);
   },
   onRetry: (attempt) => {
+    stats.connectStats.retry += 1;
     showLog(`[retry] 正在进行第 ${attempt + 1} 次重连`);
   },
   onReconnect: () => {
+    stats.connectStats.reconnect += 1;
     showLog('[reconnect] 重连成功');
   },
   onReconnecterror: () => {
+    stats.connectStats.reconnecterror += 1;
     showLog('[reconnecterror] 重连失败');
   },
 };
@@ -133,6 +150,17 @@ signalService.login(userName, callbacks)
       });
   });
 
+if(program.role === 'recv' && program.mode === 'single') {
+  setTimeout(() => {
+    collectReport({
+      login: eventCost(stats, 'login'),
+      joinRoom: eventCost(stats, 'joinRoom'),
+      connectStats: stats.connectStats,
+    });
+    process.exit(0);
+  }, 60 * 60 * 1000); // 持续一个小时看是否会断线
+}
+
 const sendMsgOnInterval = (target, interval, totalTimes) => {
   let times = 0;
   const timer = setInterval(() => {
@@ -175,6 +203,7 @@ const collectReport = (info) => {
     env: program.env,
     role: program.role,
     location: program.location,
+    mode: program.mode,
   };
   d(`logstash: ${JSON.stringify(log, null, 2)}`);
   logstash([log])
