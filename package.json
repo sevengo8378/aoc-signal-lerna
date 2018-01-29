@@ -4,8 +4,8 @@
   "author": "byrne.liang@alo7.com",
   "license": "MIT",
   "scripts": {
-    "ansible:deploy": "cd ansible && ansible-playbook site.yml",
-    "ansible:upgrade": "cd ansible && ansible-playbook site.yml --tags npm"
+    "ansible:prepare": "cd ansible && ansible-playbook site.yml",
+    "ansible:libupdate": "cd ansible && ansible-playbook site.yml --tags npm"
   },
   "devDependencies": {
     "lerna": "^2.7.1"
