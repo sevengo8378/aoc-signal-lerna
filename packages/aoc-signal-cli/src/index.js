@@ -154,7 +154,7 @@ signalService.login(userName, callbacks)
   });
 
 if(program.role === 'recv' && program.mode === 'single') {
-  const waitSecondsToExit = parseInt(program.duration - 5);
+  const waitSecondsToExit = parseInt(program.duration - 5, 10);
   d(`wait ${waitSecondsToExit} seconds to exit.`);
   setTimeout(() => {
     collectReport({
