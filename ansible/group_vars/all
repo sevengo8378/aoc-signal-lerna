@@ -4,4 +4,11 @@ users:
     authorized_keys:
       - roles/common/files/public_keys/byrne@office.pub
 
+aws_user: ubuntu
+node_version: "v8.9.4"
 
+# cli_options
+room: "1"
+zx: false
+mode: "multi"
+duration: "3600"

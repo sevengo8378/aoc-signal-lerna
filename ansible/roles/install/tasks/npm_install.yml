@@ -6,6 +6,6 @@
     name: aoc-signal-cli
     global: yes
     state: latest
-    #executable: "/home/ubuntu/.nvm/versions/node/v8.9.4/bin/npm"
+    #executable: "/home/ubuntu/.nvm/versions/node/{{node_version}}/bin/npm"
   environment:
-    PATH: "/home/ubuntu/.nvm/versions/node/v8.9.4/bin:{{ ansible_env.PATH }}"
+    PATH: "/home/ubuntu/.nvm/versions/node/{{node_version}}/bin:{{ ansible_env.PATH }}"

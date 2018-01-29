@@ -1,17 +1,17 @@
 ---
 
 - hosts: aws-test aws-us aws-sgp
-  remote_user: ubuntu
+  remote_user: "{{ aws_user }}"
   roles:
   - role: leonidas.nvm
     become: true
     become_method: sudo
     tags: nvm
     nvm:
-      user: ubuntu
+      user: "{{ aws_user }}"
       version: v0.33.0
-      node_version: '8.9.4'
-      executable: ~/.nvm/versions/node/v8.9.4/bin/npm
+      node_version: "{{ node_version }}"
+      executable: "~/.nvm/versions/node/{{ node_version }}/bin/npm"
   - install
 #  - cron
 

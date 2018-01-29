@@ -25,6 +25,7 @@ program
   .option('-l --location <location>', 'Specify user location', 'china')
   .option('-c --count <count>', 'Specify message count to send', '10')
   .option('-m --mode <mode>', 'Specify test mode', /^(multi|single)/i, 'multi')
+  .option('-d --duration <duration>', 'Specify process duration in seconds, only works in single mode', 3600)
   .option('-z --zx', 'User zhuanxian')
   .parse(process.argv);
 
@@ -153,15 +154,15 @@ signalService.login(userName, callbacks)
   });
 
 if(program.role === 'recv' && program.mode === 'single') {
+  const waitSecondsToExit = parseInt(program.duration - 5);
+  d(`wait ${waitSecondsToExit} seconds to exit.`);
   setTimeout(() => {
     collectReport({
       login: eventCost(stats, 'login'),
       joinRoom: eventCost(stats, 'joinRoom'),
       connectStats: stats.connectStats,
     });
-    d('benchmark complete.');
-    process.exit(0);
-  }, 60 * 60 * 1000); // 持续一个小时看是否会断线
+  }, waitSecondsToExit * 1000); // 持续一段时间后发送报告看是否会断线,时间由program.duration控制
 }
 
 const sendMsgOnInterval = (target, interval, totalTimes) => {
