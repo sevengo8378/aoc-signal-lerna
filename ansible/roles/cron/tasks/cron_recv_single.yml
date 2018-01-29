@@ -5,7 +5,7 @@
     name: "recv message single mode, room={{ room }} zx={{ zx }} duration={{ duration }}"
     job: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role recv --env prod --mode single --room {{ room }} --zx {{ zx }} --duration {{ duration }} >>/home/ubuntu/recv_single.log 2>&1"
 #    hour: "*/1"
-    minute: "*/30"
+    minute: "*/10"
     state: present
   tags: cron_recv_single_add
   async: 5000

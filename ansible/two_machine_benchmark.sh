@@ -9,7 +9,7 @@ action=$5
 cron_action=remove
 [[ "$action" == "start" ]] && cron_action=add
 
-duration=1800
+duration=600
 
 # 国内机器消息接收
 ansible-playbook benchmark.yml -l ${cn_device} --tags cron_recv_${cron_action} --extra-vars "room=${room} zx=false"
