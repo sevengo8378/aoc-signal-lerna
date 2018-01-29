@@ -207,6 +207,7 @@ const collectReport = (info) => {
     role: program.role,
     location: program.location,
     mode: program.mode,
+    zx: program.zx,
   };
   d(`logstash: ${JSON.stringify(log, null, 2)}`);
   logstash([log])
