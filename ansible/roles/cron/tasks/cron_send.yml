@@ -3,7 +3,7 @@
 - name: "send message every 5 mins, room={{ room }} zx={{ zx }}"
   cron:
     name: "send message every 5 mins, room={{ room }} zx={{ zx }}"
-    job: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role send --env prod --room {{ room }} --zx {{ zx }}>/home/ubuntu/send.log 2>&1"
+    job: "PATH=/home/ubuntu/.nvm/versions/node/v8.9.4/bin/ DEBUG=app:*,signal:* benchmark-leancloud --role send --env prod --room {{ room }} --zx {{ zx }} >>/home/ubuntu/send.log 2>&1"
     minute: "*/5"
     state: present
   tags: cron_send_add
