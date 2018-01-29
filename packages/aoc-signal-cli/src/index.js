@@ -30,7 +30,12 @@ program
   .parse(process.argv);
 
 d(`role: ${program.role}`);
-d(`zx: ${program.zx}`);
+
+let use_zx = false;
+if(program.zx === 'true' || program.zx === 'True') {
+  use_zx = true;
+}
+d(`use_zx: ${use_zx}`);
 
 const userName = program.role === 'send' ? `${program.room}_s` : `${program.room}_r`;
 roomProps.members = [`${program.room}_s`, `${program.room}_r`];
@@ -83,7 +88,7 @@ const callbacks = {
 };
 
 d('benchmark start');
-if(program.zx) {
+if(use_zx) {
   process.env.SERVER = 'wss://rtm-global-in.leancloud.cn';
 }
 const signalService = new SignalService(leancloudConfig);
@@ -203,13 +208,13 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
 const collectReport = (info) => {
   const log = {
     category: 'im_benchmark',
-    formatVersion: 4,
+    formatVersion: 5,
     ...info,
     env: program.env,
     role: program.role,
     location: program.location,
     mode: program.mode,
-    zx: program.zx,
+    zx: use_zx,
   };
   d(`logstash: ${JSON.stringify(log, null, 2)}`);
   logstash([log])
