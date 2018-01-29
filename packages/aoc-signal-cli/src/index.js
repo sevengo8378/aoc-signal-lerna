@@ -208,7 +208,7 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
 const collectReport = (info) => {
   const log = {
     category: 'im_benchmark',
-    formatVersion: 5,
+    formatVersion: 6,
     ...info,
     env: program.env,
     role: program.role,
