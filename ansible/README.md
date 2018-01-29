@@ -13,6 +13,8 @@
 ansible-playbook site.yml -l test [--tags crons] -k
 
 # 测试发送方
+ansible-playbook benchmark.yml -l aws-test --tags cron_send_add --extra-vars "room=1 zx=true"
+ansible-playbook benchmark.yml -l aws-test --tags cron_send_remove --extra-vars "room=1 zx=true"
 
 # 测试接收方
 ansible-playbook benchmark.yml -l aws-test --tags cron_recv_add --extra-vars "room=1 zx=true" 

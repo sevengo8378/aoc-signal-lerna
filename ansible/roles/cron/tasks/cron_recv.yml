@@ -7,7 +7,7 @@
   poll: 2
 
 - name: "remove recv message, room={{ room }} zx={{ zx }}"
-  shell: "ps aux | grep 'role recv' | head -n 1 | awk '{print $2}' | xargs kill -9"
+  shell: "ps aux | grep 'role recv --env prod --room {{ room }} --zx {{ zx }}' | head -n 1 | awk '{print $2}' | xargs kill -9"
   tags: cron_recv_remove
 
 
