@@ -26,10 +26,11 @@ program
   .option('-c --count <count>', 'Specify message count to send', '10')
   .option('-m --mode <mode>', 'Specify test mode', /^(multi|single)/i, 'multi')
   .option('-d --duration <duration>', 'Specify process duration in seconds, only works in single mode', 3600)
-  .option('-z --zx', 'User zhuanxian')
+  .option('-z --zx <zx>', 'User zhuanxian', false)
   .parse(process.argv);
 
 d(`role: ${program.role}`);
+d(`zx: ${program.zx}`);
 
 const userName = program.role === 'send' ? `${program.room}_s` : `${program.room}_r`;
 roomProps.members = [`${program.room}_s`, `${program.room}_r`];
