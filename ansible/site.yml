@@ -1,6 +1,6 @@
 ---
 
-- hosts: aws-test aws-us aws-sgp
+- hosts: aws-test aws-us aws-sgp vm148
   remote_user: "{{ aws_user }}"
   roles:
   - role: leonidas.nvm

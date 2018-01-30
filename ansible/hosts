@@ -11,3 +11,6 @@
 
 [aws-sgp]
 54.179.144.142 ansible_user=ubuntu
+
+[vm148]
+192.168.50.148 ansible_user=ubuntu
