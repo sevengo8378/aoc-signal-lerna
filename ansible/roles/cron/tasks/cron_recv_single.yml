@@ -18,7 +18,7 @@
   tags: cron_recv_single_remove
 
 - name: "remove recv message single mode current running process, room={{ room }} zx={{ zx }} duration={{ duration }}"
-  shell: "ps aux | grep 'role recv --env prod --room {{ room }} --zx {{ zx }} --duration {{ duration }}' | head -n 1 | awk '{print $2}' | xargs kill -9"
+  shell: "ps aux | grep 'role recv --env prod --mode single --room {{ room }} --zx {{ zx }} --duration {{ duration }}' | head -n 1 | awk '{print $2}' | xargs kill -9"
   tags: cron_recv_single_remove
 
 
