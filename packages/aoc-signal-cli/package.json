@@ -1,6 +1,6 @@
 {
   "name": "aoc-signal-cli",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "This is a cli application to do leancloud benchmark.",
   "main": "./bin/leancloud-benchmark.js",
   "scripts": {
