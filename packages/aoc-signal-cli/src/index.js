@@ -16,6 +16,8 @@ import { logstash } from './logstash';
 
 const d = debug('app:index');
 
+handleUncaughtException();
+
 program
   .version(packageJson.version)
   .option('-r --role <role>', 'Specify if message sender or receiver', /^(send|recv)$/i, 'send')
@@ -167,6 +169,7 @@ if(program.role === 'recv' && program.mode === 'single') {
       login: eventCost(stats, 'login'),
       joinRoom: eventCost(stats, 'joinRoom'),
       connectStats: stats.connectStats,
+      action: 'connectStats',
     });
   }, waitSecondsToExit * 1000); // 持续一段时间后发送报告看是否会断线,时间由program.duration控制
 }
@@ -198,6 +201,7 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
           deliverCostAvg: s2bCost,
           netDelay: a2sCost + s2bCost,
           msgCount: parseInt(program.count, 10),
+          action: 'messageDelay',
         });
       }, 5000);
     }
@@ -205,10 +209,10 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
   }, interval);
 };
 
-const collectReport = (info) => {
+const collectReport = (info, needExit = true) => {
   const log = {
     category: 'im_benchmark',
-    formatVersion: 6,
+    formatVersion: 7,
     ...info,
     env: program.env,
     role: program.role,
@@ -216,7 +220,6 @@ const collectReport = (info) => {
     mode: program.mode,
     zx: use_zx,
   };
-  d(`logstash: ${JSON.stringify(log, null, 2)}`);
   logstash([log])
     .then((response) => {
       if (response.status < 200 || response.status >= 300) {
@@ -226,14 +229,32 @@ const collectReport = (info) => {
       return response.json();
     })
     .then(() => {
+      d(`logstash: ${JSON.stringify(log, null, 2)}`);
       d('benchmark complete.');
-      process.exit(0);
+      if(needExit) {
+        process.exit(0);
+      }
     })
     .catch((err) => {
-      d(`benchmark err: ${err}`);
+      d(`logstash err: ${err}`);
     });
 };
 
-
+function handleUncaughtException() {
+  process.on('uncaughtException', function (err) {
+    d(`uncaughtException: ${err}`);
+    collectReport({
+      action: 'uncaughtException',
+      detail: err.toString(),
+    });
+  });
+  process.on('unhandledRejection', (reason) => {
+    d(`unhandledRejection: ${reason}`);
+    collectReport({
+      action: 'unhandledRejection',
+      detail: reason,
+    });
+  });
+};
 
 

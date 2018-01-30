@@ -24,11 +24,11 @@ export const eventEnd = (stats, key) => {
 };
 
 export const eventCost = (stats, key) => {
-  return stats[key] && stats[key].cost;
+  return stats[key] ? stats[key].cost : 0;
 };
 
 const samples = {};
-export function addSample(key, value) {
+export function addSample(key, value, excludeZero = true) {
   let sample;
   if(samples.hasOwnProperty(key)) {
     sample = samples[key];
@@ -40,9 +40,11 @@ export function addSample(key, value) {
     };
     samples[key] = sample;
   }
-  sample.sum += value;
-  sample.cnt += 1;
-  sample.avg = sample.sum / sample.cnt;
+  if(!excludeZero || value !== 0) {
+    sample.sum += value;
+    sample.cnt += 1;
+    sample.avg = sample.sum / sample.cnt;
+  }
 }
 
 export function getSample(key) {
