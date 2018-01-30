@@ -255,6 +255,6 @@ function handleUncaughtException() {
       detail: reason,
     });
   });
-};
+}
 
 
