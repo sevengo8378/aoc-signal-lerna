@@ -9,6 +9,7 @@ action=$5
 cron_action=remove
 [[ "$action" == "start" ]] && cron_action=add
 
+# single模式测断线率每个进程的持续时间, 调整此数值同时还需要对应修改 ./roles/cron/tasks/cron_recv_single.yml下的cron时间配置
 duration=600
 
 # 国内机器消息接收
