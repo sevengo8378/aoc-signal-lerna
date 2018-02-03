@@ -219,6 +219,7 @@ const collectReport = (info, needExit = true) => {
     location: program.location,
     mode: program.mode,
     zx: use_zx,
+    room: roomProps.name,
   };
   logstash([log])
     .then((response) => {
