@@ -3,8 +3,7 @@
  */
 
 export default {
-  id: '5a605d7d5b90c830ff7bbae7',
-// id: '5a6008fc1579a30038700abc',
+  id: 'ssss', 
   members: ['Guest1', 'Guest2'],
   name: 'testroom',
 
@@ -13,4 +12,4 @@ export default {
 
   // 唯一对话，当其为 true 时，如果当前已经有相同成员的对话存在则返回该对话，否则会创建新的对话
   unique: true,
-}
+};

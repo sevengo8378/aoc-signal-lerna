@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import { SignalService } from 'aoc-signal';
 import _ from 'lodash';
-import { TextMessage } from 'leancloud-realtime';
+// import { TextMessage } from 'leancloud-realtime';
 import {formatTime, encodeHTML, messageDelay, addSample, getSample } from './utils';
 import roomProps from './roomProps';
 import leancloudConfig from './leancloud/leancloud_config';
@@ -49,10 +49,10 @@ class App extends Component {
         this.showLog('[online] 已恢复在线');
       },
       onSchedule: (attempt, time) => {
-        this.showLog('[schedule] ' + time / 1000 + 's 后进行第 ' + (attempt + 1) + ' 次重连');
+        this.showLog(`[schedule] ${time / 1000}s 后进行第 ${attempt + 1} 次重连`);
       },
       onRetry: (attempt) => {
-        this.showLog('[retry] 正在进行第 ' + (attempt + 1) + ' 次重连');
+        this.showLog(`[retry] 正在进行第 ${attempt + 1} 次重连`);
       },
       onReconnect: () => {
         this.showLog('[reconnect] 重连成功');
@@ -61,27 +61,32 @@ class App extends Component {
         this.showLog('[reconnecterror] 重连失败');
       },
       // onMessage: this.onMessage,
+    };
+    const {id, ...restRoomProps} = this.state.roomProps;
+    let room = restRoomProps;
+    if(id !== '') {
+      room = id;
     }
+    const roomLogName = typeof room === 'string' ? room : restRoomProps.name;
     this.signalService.login(this.state.userName, callbacks)
-      .then(client => {
-        const roomProps = this.state.roomProps;
+      .then(() => {
         this.showLog(`${this.state.userName} 登录成功`);
-        this.showLog(`${this.state.userName} 加入房间 ${roomProps.name}...`);
+        this.showLog(`${this.state.userName} 加入房间 ${roomLogName}...`);
         const callbacks = {
           onMessage: this.onMessage,
           // onMessageHistory: this.onMessageHistory,
           onReceipt: this.onReceipt,
           onDelivered: this.onDelivered,
         };
-        this.signalService.joinRoom(roomProps, callbacks)
-          .then((conversation) => {
-            this.showLog(`${this.state.userName} 加入房间 ${roomProps.name} 成功`);
-            this.showLog(`当前房间人数${conversation.members.length}, 可以开始聊天 [${conversation.members.join(',')}]`);
+        this.signalService.joinRoom(room, callbacks)
+          .then((room) => {
+            this.showLog(`${this.state.userName} 加入房间 ${roomLogName} 成功`);
+            this.showLog(`当前房间人数${room.members.length}, 可以开始聊天 [${room.members.join(',')}]`);
             // conversation.count().then((count) => {
             //   this.showLog(`${this.state.userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${count}, 可以开始聊天`);
             // });
           });
-      })
+      });
   }
 
   onMessage = (message) => {
@@ -96,21 +101,21 @@ class App extends Component {
   }
 
   onDelivered = () => {
-    this.signalService.conversation.fetchReceiptTimestamps()
-      .then((conversation) => {
+    this.signalService.room.refresh()
+      .then((room) => {
         if(this.lastMessageSendTime > 0) {
-          const delay = conversation.lastDeliveredAt.getTime() - this.lastMessageSendTime;
+          const delay = room.lastDeliveredAt.getTime() - this.lastMessageSendTime;
           this.updateSample('total', delay);
           console.log(`onDelivered delay=${delay}`);
           this.lastMessageSendTime = 0;
         }
-        console.log(conversation.lastDeliveredAt);
+        console.log(room.lastDeliveredAt);
       });
   }
 
   onMessageHistory = (history) => {
     const msgCnt = history.length;
-    for(let i=msgCnt-1; i>=0; i--) {
+    for(let i = msgCnt - 1; i >= 0; i--) {
       this.showMsg(history[i], true);
     }
   }
@@ -119,7 +124,7 @@ class App extends Component {
     if(this.state.msgToSend.length === 0) {
       alert(`请输入文字`);
     } else {
-      this.signalService.sendMsg(this.state.msgToSend)
+      this.signalService.room.broadcastMsg(this.state.msgToSend)
         .then(message => {
           this.setState({
             msgToSend: '',
@@ -157,18 +162,14 @@ class App extends Component {
       from = '自己';
     }
 
-    if(message instanceof TextMessage) {
-      if(isSelf) {
-        this.updateSample('send', message.sendDelay);
-        this.lastMessageSendTime = message.timestamp;
-        this.showLog(`(${formatTime(message.timestamp)}) ${message.sendDelay}ms 自己:`, `${encodeHTML(message.text)}`, isBefore)
-      } else {
-        const delay = messageDelay(message);
-        this.updateSample('recv', delay);
-        this.showLog(`(${formatTime(Date.now())}) ${delay}ms ${encodeHTML(from)}:`, `${encodeHTML(message.text)}`, isBefore);
-      }
+    if(isSelf) {
+      this.updateSample('send', message.sendDelay);
+      this.lastMessageSendTime = message.timestamp;
+      this.showLog(`(${formatTime(message.timestamp)}) ${message.sendDelay}ms 自己:`, `${encodeHTML(message.text)}`, isBefore)
     } else {
-      console.warn(`unsupported message type`);
+      const delay = messageDelay(message);
+      this.updateSample('recv', delay);
+      this.showLog(`(${formatTime(Date.now())}) ${delay}ms ${encodeHTML(from)}:`, `${encodeHTML(message.text)}`, isBefore);
     }
   }
 
@@ -209,15 +210,16 @@ class App extends Component {
   updateInputtext = (evt, key) => {
     this.setState({
       [key]: evt.target.value
-    })
+    });
   }
 
   updateRoomProps = (evt, key) => {
     this.setState({
       roomProps: {
+        ...this.state.roomProps,
         [key]: evt.target.value
       }
-    })
+    });
   }
 
   updateSample = (key, value) => {
@@ -241,16 +243,23 @@ class App extends Component {
           <label>
             用户名
             <input autoFocus id="input-name" type="text"
-                   value={this.state.userName}
-                   onChange={evt => this.updateInputtext(evt, 'userName')}
+              value={this.state.userName}
+              onChange={evt => this.updateInputtext(evt, 'userName')}
             />
           </label>
           <label>
             房间名
             <input autoFocus id="input-room" type="text"
-                   value={this.state.roomProps.name}
-                   onChange={evt => this.updateRoomProps(evt, 'name')}
-            />
+              value={this.state.roomProps.name}
+              onChange={evt => this.updateRoomProps(evt, 'name')}
+            />  
+          </label>
+          <label>
+            房间ID(id值不为空优先根据id加入房间)
+            <input autoFocus id="input-room-id" type="text"
+              value={this.state.roomProps.id}
+              onChange={evt => this.updateRoomProps(evt, 'id')}
+            />  
           </label>
           <div id="login-btn" className="btn" onClick={this.login}>登录</div>
         </div>
@@ -269,16 +278,16 @@ class App extends Component {
         <div className="item">
           <label>输入信息：</label>
           <input id="input-send" className="input-send" type="text"
-                 value={this.state.msgToSend}
-                 onChange={evt => this.updateInputtext(evt, 'msgToSend')}
+            value={this.state.msgToSend}
+            onChange={evt => this.updateInputtext(evt, 'msgToSend')}
           />
           <div id="send-btn" className="btn" onClick={this.sendMsg}>发送</div>
         </div>
         <div className="item">
           <label>时间间隔(毫秒)：</label>
           <input id="input-send" className="input-send-interval" type="text"
-                 value={this.state.msgInterval}
-                 onChange={evt => this.updateInputtext(evt, 'msgInterval')}
+            value={this.state.msgInterval}
+            onChange={evt => this.updateInputtext(evt, 'msgInterval')}
           />
           <div id="auto-send-btn" className="btn" onClick={this.autoSendMsg}>自动发送</div>
           <div id="auto-send-stop-btn" className="btn" onClick={this.autoSendStop}>停止</div>
