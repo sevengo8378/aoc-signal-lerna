@@ -17,7 +17,7 @@ export default class SignalConfig extends Record({
     appKey: string
 
     // 节点id
-    region?: string
+    region: string
 
     // 指定私有部署的 RTM 服务器地址
     RTMServers?: string

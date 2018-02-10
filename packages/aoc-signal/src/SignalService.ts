@@ -5,9 +5,13 @@ import { Realtime
   , TextMessage
   , IMClient
   , Conversation
-  , Message 
+  , Message, 
+  ConversationBase
 } from 'leancloud-realtime'
 import SignalConfig from './SignalConfig'
+import ISignature from './ISignature'
+import Room from './Room'
+import ChatSignal from './ChatSignal'
 
 const debug = require('debug')
 const dbg = debug('signal:SignalService')
@@ -16,9 +20,9 @@ export default class SignalService {
 
   protected _client: IMClient
 
-  protected _conversation: Conversation
-
   protected _service: Realtime
+
+  protected _room: Room
 
   /**
    * 创建信令服务实例
@@ -28,12 +32,11 @@ export default class SignalService {
     if (process.env.SERVER !== undefined) {
       cfg.RTMServers = process.env.SERVER
     }
+
     this._service = new Realtime(cfg)
     dbg(`Leancloud AppId: ${cfg.appId}`)
     dbg(`Leancloud AppKey: ${cfg.appKey}`)
     dbg(`RTMServers: '${cfg.RTMServers}'`)
-    this._client = null
-    this._conversation = null
   }
 
   /**
@@ -42,20 +45,26 @@ export default class SignalService {
    * @param {Object} callbacks 注册回调函数
    * @returns {Promise.<TResult>}
    */
-  login(clientId: string, callbacks: {
-    onDisconnect?: Function,
-    onOffline?: Function,
-    onOnline?: Function,
-    onSchedule?: Function,
-    onRetry?: Function,
-    onReconnect?: Function,
-    onReconnecterror?: Function,
-  }) {
-    // todo: leancloud4.0的api才有logIn的过程
-    // return User.logIn(clientId, password).then((user) => {
-    //   return this.service.createIMClient(user);
-    // })
-    return this._service.createIMClient(clientId)
+  login(
+    clientId: string, 
+    callbacks: {
+      onDisconnect?: () => void,
+      onOffline?: () => void,
+      onOnline?: () => void,
+      onSchedule?: (attempt: number, delay: number) => void,
+      onRetry?: (attempt: number) => void,
+      onReconnect?: () => void,
+      onReconnecterror?: () => void,
+    },    
+    signature?: ISignature, 
+    channelSignature?: ISignature
+  ) {
+    const factory = signature && channelSignature ? {
+      signatureFactory: (cid: string) => Promise.resolve(signature),
+      conversationSignatureFactory: (cid: string) => Promise.resolve(channelSignature)
+    } : null
+    
+    return this._service.createIMClient(clientId, factory)
       .then((c) => {
         this._client = c
         const {
@@ -100,51 +109,53 @@ export default class SignalService {
         //   debug(`Message received: '${message.toFullJSON()}' from ${conversation.name}`)
         //   if (onMessage) onMessage(message, conversation)
         // })
-        return this._client
       })
   }
 
+  /**
+   * 加入信令房间
+   * @param {object | string} room 房间信息
+   * @param {object} callbacks 注册回调函数
+   * @return {Promise<Room>}
+   */
   joinRoom(
-    roomProps: {
+    room: {
       // room name
       name: string, 
       // 创建暂态的聊天室（暂态类似聊天室,无人员上线,不能查询成员列表,没有成员加入离开通知,不支持邀请踢出）
       transient: boolean,
       // 唯一对话，当其为 true 时，如果当前已经有相同成员的对话存在则返回该对话，否则会创建新的对话
       unique: boolean,
-    },       
+    } | string,       
     callbacks: {
       onMessage?: Function,
       onReceipt?: Function,
       onDelivered?: Function,
       onMessageHistory?: Function,
-  }) {
+  }): Promise<Room> {
     if (!this._client) {
-      return Promise.reject('err_not_login')
+      Promise.reject('err_not_login')
     }
-    // const {
-    //   id, ...restRoomProps
-    // } = roomProps;
-    // debug(`restRoomProps = ${JSON.stringify(restRoomProps, null, 2)}`);
-    return this._client.createConversation(roomProps)
-      .then(function(conversation: Conversation) {
-        dbg(`创建新 Room 成功: ${JSON.stringify(conversation, null, 2)}`)
-        return conversation
-      })
-    // return this.client.getConversation(id)
-    //   .then((conversation) => {
-    //     if (conversation) { //       return conversation;
-    //     } else {
-    //       debug(`不存在这个room ${id}，创建一个`);
-    //       return this.client.createConversation(restRoomProps)
-    //         .then(function(conversation) {
-    //           debug('创建新 Room 成功，id 是：', conversation.id);
-    //           return conversation;
-    //         });
-    //     }
-    //   })
-      .then(conversation => {
-        this._conversation = conversation
+
+    let ret: Promise<Conversation> = null
+    if (typeof room === 'string') {
+      ret = this._client.getConversation(<string> room)
+        .then(function(conversation: Conversation) {
+          if (conversation) {
+            return conversation
+          } else {
+            Promise.reject('err_room_not_found')
+          }
+        })
+    } else {
+      ret = this._client.createConversation(<any> room)
+        .then(function(conversation: Conversation) {
+          return conversation
+        })
+    }
+    return ret.then(conversation => {
+        dbg(`Room Info: ${JSON.stringify(conversation, null, 2)}`)
+        this._room = new Room(conversation)
         return conversation.join()
       })
       .then((conversation: Conversation) => {
@@ -183,33 +194,15 @@ export default class SignalService {
             throw err
           })
         }
-        return conversation
-      })
-  }
-
-  sendMsg(msg: string) {
-    if (!this._client) {
-      return Promise.reject('err_not_login')
-    }
-    if (!this._conversation) {
-      return Promise.reject('err_not_join')
-    }
-    const clientSendAt = Date.now()
-    return this._conversation.send(new TextMessage(msg), {
-      receipt: true,
-      transient: false,
-    })
-      .then((message) => {
-        (message as any).sendDelay = Date.now() - clientSendAt
-        return message
+        return new Room(conversation)
       })
   }
 
   isLoggedIn() {
-    return this._client && this._conversation
+    return this._client && this._room
   }
 
-  get conversation() {
-    return this._conversation
+  get room() {
+    return this._room
   }
 }

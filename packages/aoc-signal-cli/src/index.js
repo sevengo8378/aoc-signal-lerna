@@ -105,10 +105,10 @@ const onReceipt = ({message}) => {
 
 const onDelivered = () => {
   d(`onDelivered`);
-  signalService.conversation.fetchReceiptTimestamps()
-    .then((conversation) => {
+  signalService.room.refresh()
+    .then((room) => {
       if(lastMessageSendTime > 0) {
-        const delay = (conversation.lastDeliveredAt.getTime() - lastMessageSendTime) / 2;
+        const delay = (room.lastDeliveredAt.getTime() - lastMessageSendTime) / 2;
         d(`deliver delay=${delay}`);
         addSample('deliver', delay);
         lastMessageSendTime = 0;
@@ -149,9 +149,9 @@ signalService.login(userName, callbacks)
     };
     eventBegin(stats, 'joinRoom');
     signalService.joinRoom(roomProps, callbacks)
-      .then((conversation) => {
+      .then((room) => {
         eventEnd(stats, 'joinRoom');
-        d(`${userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${conversation.members.length}, 可以开始聊天`);
+        d(`${userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${room.members.length}, 可以开始聊天`);
         if(program.role === 'send') {
           sendMsgOnInterval(signalService, 2000, program.count);
         }
@@ -180,7 +180,7 @@ const sendMsgOnInterval = (target, interval, totalTimes) => {
     if(times < totalTimes) {
       times++;
       const begin = Date.now();
-      target.sendMsg(`msg ${times}`)
+      target.room.broadcastMsg(`msg ${times}`)
         .then((message) => {
           lastMessageSendTime = message.timestamp;
           const delay = (Date.now() - begin) / 2;
