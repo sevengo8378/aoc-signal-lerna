@@ -3,7 +3,7 @@
  */
 
 export default {
-  id: 'ssss', 
+  id: '', 
   members: ['Guest1', 'Guest2'],
   name: 'testroom',
 

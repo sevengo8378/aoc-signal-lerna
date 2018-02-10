@@ -16,6 +16,7 @@ class App extends Component {
       roomProps: roomProps,
       msgToSend: '',
       msgInterval: 1000,
+      bgColor: 'white',
       logs: [],
       samples: {
         send: {
@@ -192,8 +193,9 @@ class App extends Component {
   }
 
   renderLogs = () => {
+    const bgColorCls = `bg-color-${this.state.bgColor}`;
     return (
-      <div id="print-wall" className="print-wall" ref="logPanel">
+      <div id="print-wall" className={`print-wall ${bgColorCls}`} ref="logPanel">
         {
           this.state.logs.map((log, index) => {
             if(_.isArray(log) && log.length > 1) {
@@ -219,6 +221,12 @@ class App extends Component {
         ...this.state.roomProps,
         [key]: evt.target.value
       }
+    });
+  }
+
+  updateBgColor = (evt) => {
+    this.setState({
+      bgColor: evt.target.value
     });
   }
 
@@ -254,6 +262,8 @@ class App extends Component {
               onChange={evt => this.updateRoomProps(evt, 'name')}
             />  
           </label>
+        </div>
+        <div className="item">   
           <label>
             房间ID(id值不为空优先根据id加入房间)
             <input autoFocus id="input-room-id" type="text"
@@ -271,6 +281,17 @@ class App extends Component {
         </div>
         <div className="stats">
           Message Count: {this.state.samples.total.cnt}, Average Delay: {this.state.samples.total.avg.toFixed(0)}ms (onDelivered时间 - msg.timestamp)
+        </div>
+        <div className="item">
+          <label>
+            切换背景颜色
+            <select value={this.state.bgColor}
+              onChange={evt => this.updateBgColor(evt)}>
+              <option value="white">White</option>
+              <option value="green">Green</option>
+              <option value="yellow">Yellow</option>
+            </select>
+          </label>
         </div>
         <div className="item">
           {this.renderLogs()}
