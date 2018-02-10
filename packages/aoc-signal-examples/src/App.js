@@ -165,7 +165,7 @@ class App extends Component {
     if(isSelf) {
       this.updateSample('send', message.sendDelay);
       this.lastMessageSendTime = message.timestamp;
-      this.showLog(`(${formatTime(message.timestamp)}) ${message.sendDelay}ms 自己:`, `${encodeHTML(message.text)}`, isBefore)
+      this.showLog(`(${formatTime(message.timestamp)}) ${message.sendDelay}ms 自己:`, `${encodeHTML(message.text)}`, isBefore);
     } else {
       const delay = messageDelay(message);
       this.updateSample('recv', delay);
@@ -197,7 +197,7 @@ class App extends Component {
         {
           this.state.logs.map((log, index) => {
             if(_.isArray(log) && log.length > 1) {
-              return (<p key={`log_${index}`}>{log[0]} <span className="strong">{log[1]}</span></p>)
+              return (<p key={`log_${index}`}>{log[0]} <span className="strong">{log[1]}</span></p>);
             } else {
               return (<p key={`log_${index}`}>{log[0]}</p>);
             }
