@@ -3,7 +3,13 @@ import {
 } from 'leancloud-realtime'
 import ISignal from './ISignal'
 
-export default class CmdSignal extends TextMessage implements ISignal {
+export interface ICmdSignal extends ISignal {
+    cmdId: number
+
+    cmdPayload: object
+}
+
+export class CmdSignal extends TextMessage implements ICmdSignal {
 
     cmdId: number
 

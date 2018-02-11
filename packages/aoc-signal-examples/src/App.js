@@ -149,7 +149,7 @@ class App extends Component {
   }
 
   autoSendMsg = () => {
-    if(!this.signalService.isLoggedIn()) {
+    if(!this.signalService.isLoggedIn) {
       alert('你还没有登录');
       return;
     }

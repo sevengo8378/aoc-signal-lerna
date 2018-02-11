@@ -3,7 +3,11 @@ import {
 } from 'leancloud-realtime'
 import ISignal from './ISignal'
 
-export default class ChatSignal extends TextMessage implements ISignal {
+export interface IChatSignal extends ISignal {
+    message: string
+}
+
+export class ChatSignal extends TextMessage implements IChatSignal {
     roomId(): string {
         return this.cid
     }

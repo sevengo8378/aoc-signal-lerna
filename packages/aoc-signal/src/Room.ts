@@ -3,11 +3,36 @@ import {
     Message
 } from 'leancloud-realtime'
 import ISignal from './ISignal'
-import IRoom from './IRoom'
-import ChatSignal from './ChatSignal'
-import CmdSignal from './CmdSignal'
+import { ChatSignal } from './ChatSignal'
+import { CmdSignal } from './CmdSignal'
 
-export default class Room implements IRoom {
+export interface IRoom {
+    members: string[]
+
+    createdAt: Date
+
+    id: string 
+
+    name: string 
+
+    lastDeliveredAt: Date 
+
+    lastReadAt: Date
+
+    sendMsg(message: string, destination: string): Promise<ISignal>
+
+    broadcastMsg(message: string): Promise<ISignal>
+
+    sendCmd(cmdId: number, cmdPayload: object , destination: string): Promise<ISignal>
+
+    broadcastCmd(cmdId: number, cmdPayload: object): Promise<ISignal>
+
+    getHistorySignals(options: {beforeTime?: Date, beforeSignalId?: string, limit?: number}): Promise<ISignal[]> 
+
+    refresh(): Promise<IRoom>
+}
+
+export class Room implements IRoom {
     protected _conversation: Conversation
 
     constructor(conversation: Conversation) {
@@ -65,7 +90,7 @@ export default class Room implements IRoom {
         return this._send(signal)
     }
 
-   protected _send(signal: ChatSignal | CmdSignal): Promise<ISignal> {
+    protected _send(signal: ChatSignal | CmdSignal): Promise<ISignal> {
         return this._conversation.send(signal, {
             receipt: true,
             transient: false,
@@ -74,7 +99,15 @@ export default class Room implements IRoom {
         }) 
     }
 
-    refresh(): Promise<Room> {
+    join(): Promise<Conversation> {
+        return this._conversation.join()
+    }
+
+    quit(): Promise<Conversation> {
+        return this._conversation.quit()
+    }
+
+    refresh(): Promise<IRoom> {
         return this._conversation.fetchReceiptTimestamps()
             .then((conversation: Conversation) => {
                 return this

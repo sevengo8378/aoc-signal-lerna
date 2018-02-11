@@ -13,9 +13,9 @@ import { Realtime
 } from 'leancloud-realtime'
 import SignalConfig from './SignalConfig'
 import ISignature from './ISignature'
-import Room from './Room'
-import ChatSignal from './ChatSignal'
-import CmdSignal from './CmdSignal'
+import { Room, IRoom } from './Room'
+import { ChatSignal } from './ChatSignal'
+import { CmdSignal } from './CmdSignal'
 
 const debug = require('debug')
 const dbg = debug('signal:SignalService')
@@ -70,7 +70,7 @@ export default class SignalService {
     },    
     signature?: ISignature, 
     channelSignature?: ISignature
-  ) {
+  ): Promise<void> {
     const factory = signature && channelSignature ? {
       signatureFactory: (cid: string) => Promise.resolve(signature),
       conversationSignatureFactory: (cid: string) => Promise.resolve(channelSignature)
@@ -144,7 +144,7 @@ export default class SignalService {
       onReceipt?: Function,
       onDelivered?: Function,
       onMessageHistory?: Function,
-  }): Promise<Room> {
+  }): Promise<IRoom> {
     if (!this._client) {
       Promise.reject('err_not_login')
     }
@@ -168,7 +168,7 @@ export default class SignalService {
     return ret.then(conversation => {
         dbg(`Room Info: ${JSON.stringify(conversation, null, 2)}`)
         this._room = new Room(conversation)
-        return conversation.join()
+        return this._room.join()
       })
       .then((conversation: Conversation) => {
         /* 还有以下事件
@@ -185,10 +185,8 @@ export default class SignalService {
 
         if (callbacks.onMessage) {
           conversation.on('message', (message) => {
-            dbg(`message class name: ${message.constructor.name}`)
-            // if（message instanceof ChatSignal）{
+            dbg(`onMessage: ${message.constructor.name}`)
             callbacks.onMessage(message)
-            // }
           })
         }
         if (callbacks.onReceipt) {
@@ -209,15 +207,27 @@ export default class SignalService {
             throw err
           })
         }
-        return new Room(conversation)
+        return new Room(conversation) as IRoom
       })
   }
 
-  isLoggedIn(): boolean {
+  leavelRoom(): Promise<void> {
+    if (!this._room) {
+      dbg(`you are not in a room`)
+      return
+    }
+    this._room = null
+    return this._room.quit()
+      .then(conversation => {
+        // Note: not pass conversation as parameter to promise chain
+      })
+  }
+
+  get isLoggedIn(): boolean {
     return this._client && this._room !== null
   }
 
-  get room(): Room {
+  get room(): IRoom {
     return this._room
   }
 }

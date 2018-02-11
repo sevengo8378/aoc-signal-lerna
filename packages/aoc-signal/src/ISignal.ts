@@ -5,6 +5,8 @@ export default interface ISignal {
 
    readonly id: string
 
+   timestamp: Date
+
    toJSON(): object
 
 }
