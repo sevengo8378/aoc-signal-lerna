@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import './App.css';
-import { SignalService } from 'aoc-signal';
+import { SignalService, CmdSignal, ChatSignal } from 'aoc-signal';
 import _ from 'lodash';
 // import { TextMessage } from 'leancloud-realtime';
 import {formatTime, encodeHTML, messageDelay, addSample, getSample } from './utils';
 import roomProps from './roomProps';
 import leancloudConfig from './leancloud/leancloud_config';
+import { CmdDef } from './Consts';
 
 class App extends Component {
   constructor(props) {
@@ -91,7 +92,19 @@ class App extends Component {
   }
 
   onMessage = (message) => {
-    this.showMsg(message);
+    if(message instanceof ChatSignal) {
+      this.showMsg(message);
+    } else if (message instanceof CmdSignal) {
+      switch(message.cmdId) {
+        case CmdDef.SET_BG_COLOR: 
+          this.updateBgColor(message.cmdPayload.value, false);
+          break;
+
+        default: 
+          console.warn(`unsupported cmdId: ${message.cmdId}`);
+          break;  
+      }
+    }
   }
 
   onReceipt = ({message}) => {
@@ -224,10 +237,13 @@ class App extends Component {
     });
   }
 
-  updateBgColor = (evt) => {
+  updateBgColor = (color, needBroadcast = true) => {
     this.setState({
-      bgColor: evt.target.value
+      bgColor: color
     });
+    if(needBroadcast && this.signalService && this.signalService.isLoggedIn) {
+      this.signalService.room.broadcastCmd(CmdDef.SET_BG_COLOR, { value: color});
+    }
   }
 
   updateSample = (key, value) => {
@@ -286,7 +302,7 @@ class App extends Component {
           <label>
             切换背景颜色
             <select value={this.state.bgColor}
-              onChange={evt => this.updateBgColor(evt)}>
+              onChange={evt => this.updateBgColor(evt.target.value, true)}>
               <option value="white">White</option>
               <option value="green">Green</option>
               <option value="yellow">Yellow</option>

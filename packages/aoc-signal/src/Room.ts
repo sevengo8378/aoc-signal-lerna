@@ -55,13 +55,13 @@ export default class Room implements IRoom {
         return this._send(signal)
     }
 
-    sendCmd(cmd: { type: string, payload: any} , destination: string): Promise<ISignal> {
-        const signal = new CmdSignal(cmd).setMentionList([destination])
+    sendCmd(cmdId: number, cmdPayload: object , destination: string): Promise<ISignal> {
+        const signal = new CmdSignal(cmdId, cmdPayload).setMentionList([destination])
         return this._send(signal)
     }
 
-    broadcastCmd(cmd: { type: string, payload: any}): Promise<ISignal> {
-        const signal = new CmdSignal(cmd).mentionAll()
+    broadcastCmd(cmdId: number, cmdPayload: object): Promise<ISignal> {
+        const signal = new CmdSignal(cmdId, cmdPayload).mentionAll()
         return this._send(signal)
     }
 

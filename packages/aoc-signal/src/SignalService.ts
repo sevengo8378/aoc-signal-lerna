@@ -6,12 +6,16 @@ import { Realtime
   , IMClient
   , Conversation
   , Message, 
-  ConversationBase
+  ConversationBase,
+  messageType,
+  messageField,
+  AVMessage
 } from 'leancloud-realtime'
 import SignalConfig from './SignalConfig'
 import ISignature from './ISignature'
 import Room from './Room'
 import ChatSignal from './ChatSignal'
+import CmdSignal from './CmdSignal'
 
 const debug = require('debug')
 const dbg = debug('signal:SignalService')
@@ -37,6 +41,14 @@ export default class SignalService {
     dbg(`Leancloud AppId: ${cfg.appId}`)
     dbg(`Leancloud AppKey: ${cfg.appKey}`)
     dbg(`RTMServers: '${cfg.RTMServers}'`)
+
+    // register ChatSigal & CmdSignal as customize Message
+    messageType(1)(ChatSignal)
+    messageType(2)(CmdSignal)
+    messageField(['cmdId'])(CmdSignal)
+
+    // @ts-ignore
+    this._service.register([ChatSignal as AVMessage, CmdSignal as AVMessage])
   }
 
   /**
@@ -173,7 +185,10 @@ export default class SignalService {
 
         if (callbacks.onMessage) {
           conversation.on('message', (message) => {
+            dbg(`message class name: ${message.constructor.name}`)
+            // if（message instanceof ChatSignal）{
             callbacks.onMessage(message)
+            // }
           })
         }
         if (callbacks.onReceipt) {
@@ -198,11 +213,11 @@ export default class SignalService {
       })
   }
 
-  isLoggedIn() {
-    return this._client && this._room
+  isLoggedIn(): boolean {
+    return this._client && this._room !== null
   }
 
-  get room() {
+  get room(): Room {
     return this._room
   }
 }
