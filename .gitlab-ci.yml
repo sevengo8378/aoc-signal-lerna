@@ -31,10 +31,9 @@ build:lib:
     - master   
 
 lib:lint:
-  stage: test
-  before_script:
-    *INSTALL_DEPS  
+  stage: test  
   script:
+    - cd packages/aoc-signal
     - npm run lint
   tags:
     - docker
@@ -43,9 +42,8 @@ lib:lint:
 
 build:lib:doc:
   stage: build
-  before_script:
-    *INSTALL_DEPS  
   script:
+    - cd packages/aoc-signal
     - npm run doc
   tags:
     - docker
