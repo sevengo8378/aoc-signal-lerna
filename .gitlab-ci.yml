@@ -23,7 +23,6 @@ build:lib:
     *INSTALL_DEPS  
   script:
     - pwd
-    - cd packages/aoc-signal
     - npm run build
   tags:
     - docker
@@ -35,7 +34,6 @@ lib:lint:
   before_script:
     *INSTALL_DEPS  
   script:
-    - cd packages/aoc-signal
     - npm run lint
   tags:
     - docker
@@ -47,7 +45,6 @@ build:lib:doc:
   before_script:
     *INSTALL_DEPS  
   script:
-    - cd packages/aoc-signal
     - npm run doc
   tags:
     - docker
@@ -57,7 +54,6 @@ build:lib:doc:
 deploy:lib:doc:
   stage: deploy
   script:
-    - cd packages/aoc-signal
     - tar -czvf aoc-signal-doc.tar.gz typedoc && scp aoc-signal-doc.tar.gz ubuntu@192.168.50.148:/home/ubuntu/static-site && ssh ubuntu@192.168.50.148 'rm -rf static-site/aoc-signal-doc && mkdir -p static-site/aoc-signal-doc && tar -xzvf aoc-signal-doc.tar.gz -C ~/static-stie/aoc-signal-doc'
   tags:
     - docker
