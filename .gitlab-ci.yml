@@ -6,6 +6,14 @@ installDeps:
     - cd packages/aoc-signal
     - npm install --registry=https://repos.saybot.net/repository/alo7npm
     - node --version
+ 
+setSSHKey:
+  stage: deploy
+  script: &SET_SSH_KEY
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")    
 
 cache:
   key: "$CI_COMMIT_REF_NAME"    
@@ -52,6 +60,8 @@ build:lib:doc:
 
 deploy:lib:doc:
   stage: deploy
+  before_script:
+    *SET_SSH_KEY
   script:
     - cd packages/aoc-signal
     - pwd
