@@ -18,6 +18,7 @@ class App extends Component {
       msgToSend: '',
       msgInterval: 1000,
       bgColor: 'white',
+      loginBtnText: 'Login',
       logs: [],
       samples: {
         send: {
@@ -36,6 +37,14 @@ class App extends Component {
     };
     this.signalService = new SignalService(leancloudConfig);
     this.lastMessageSendTime = 0;
+  }
+
+  _handleLoginBtnEvt = () => {
+    if(this.state.loginBtnText === 'Login') {
+      this.login();
+    } else {
+      this.logout();
+    }
   }
 
   login = () => {
@@ -79,16 +88,34 @@ class App extends Component {
           // onMessageHistory: this.onMessageHistory,
           onReceipt: this.onReceipt,
           onDelivered: this.onDelivered,
+          onMembersJoined: this.onMembersJoined,
+          onMembersLeft: this.onMembersLeft,
         };
         this.signalService.joinRoom(room, callbacks)
           .then((room) => {
             this.showLog(`${this.state.userName} 加入房间 ${roomLogName} 成功`);
             this.showLog(`当前房间人数${room.members.length}, 可以开始聊天 [${room.members.join(',')}]`);
-            // conversation.count().then((count) => {
-            //   this.showLog(`${this.state.userName} 加入房间 ${roomProps.name} 成功, 当前房间人数${count}, 可以开始聊天`);
-            // });
+            this.setState({
+              loginBtnText: 'Logout'
+            });
           });
       });
+  }
+
+  logout = () => {
+    const afterLogout = () => {
+      this.showLog(`${this.state.userName} 注销成功`);
+      this.setState({
+        loginBtnText: 'Login'
+      });
+    };
+    if (this.signalService.room) {
+      this.signalService.leaveRoom().then(() => {
+        this.signalService.logout().then(afterLogout);
+      });
+    } else {
+      this.signalService.logout().then(afterLogout);
+    }
   }
 
   onMessage = (message) => {
@@ -126,6 +153,22 @@ class App extends Component {
         console.log(room.lastDeliveredAt);
       });
   }
+
+  onMembersJoined = (payload) => {
+    console.log(`onMembersJoined event: ${JSON.stringify(payload, null, 2)}`);
+    const members = payload.members;
+    members.forEach(member => {
+      this.showActivity('joined room', member);
+    });
+  }
+
+  onMembersLeft = (payload) => {
+    console.log(`onMembersLeft event: ${JSON.stringify(payload, null, 2)}`);
+    const members = payload.members;
+    members.forEach(member => {
+      this.showActivity('left room', member);
+    });
+  }    
 
   onMessageHistory = (history) => {
     const msgCnt = history.length;
@@ -167,6 +210,10 @@ class App extends Component {
       clearInterval(this.autoSendTimer);
       this.autoSendTimer = 0;
     }
+  }
+
+  showActivity = (activity, member) => {
+    this.showLog(`${member} ${activity}`);
   }
 
   showMsg = (message, isBefore) => {
@@ -287,7 +334,7 @@ class App extends Component {
               onChange={evt => this.updateRoomProps(evt, 'id')}
             />  
           </label>
-          <div id="login-btn" className="btn" onClick={this.login}>登录</div>
+          <div id="login-btn" className="btn" onClick={this._handleLoginBtnEvt}>{this.state.loginBtnText}</div>
         </div>
         <div className="stats">
           Message Send Count: {this.state.samples.send.cnt}, Average Delay: {this.state.samples.send.avg.toFixed(0)}ms (发送成功时间 - 消息发出时间)

@@ -14,8 +14,9 @@ import { Realtime
 import SignalConfig from './SignalConfig'
 import ISignature from './ISignature'
 import { Room, IRoom } from './Room'
-import { ChatSignal } from './ChatSignal'
-import { CmdSignal } from './CmdSignal'
+import { ChatSignal, IChatSignal } from './ChatSignal'
+import { CmdSignal, ICmdSignal } from './CmdSignal'
+import ISignal from './ISignal'
 
 const debug = require('debug')
 const dbg = debug('signal:SignalService')
@@ -117,11 +118,28 @@ export default class SignalService {
           dbg('[reconnecterror] 重连失败')
           if (onReconnecterror) onReconnecterror()
         })
-        // this._client.on('message', function(message: Message, conversation: Conversation) {
-        //   debug(`Message received: '${message.toFullJSON()}' from ${conversation.name}`)
-        //   if (onMessage) onMessage(message, conversation)
-        // })
       })
+  }
+
+  /** 
+   * 登出并关闭信令客户端 
+   * @return {Promise<void>}
+   */
+  logout(): Promise<void> {
+    if (!this.isLoggedIn) {
+      return Promise.reject(`err_not_login`)
+    }
+
+    const afterClose = () => {
+      this._client = null
+    }
+    if (this._room) {
+      return this.leaveRoom().then(() => {
+        this._client.close().then(afterClose)
+      })
+    } else {
+      return this._client.close().then(afterClose)
+    }
   }
 
   /**
@@ -140,10 +158,12 @@ export default class SignalService {
       unique: boolean,
     } | string,       
     callbacks: {
-      onMessage?: Function,
+      onMessage?: (signal: ISignal) => void,
       onReceipt?: Function,
       onDelivered?: Function,
       onMessageHistory?: Function,
+      onMembersJoined?: (payload: {members: string[], invitedBy: string}) => void
+      onMembersLeft?: (payload: {members: string[], kickedBy: string}) => void
   }): Promise<IRoom> {
     if (!this._client) {
       Promise.reject('err_not_login')
@@ -171,22 +191,32 @@ export default class SignalService {
         return this._room.join()
       })
       .then((conversation: Conversation) => {
-        /* 还有以下事件
-         kicked,
-         membersjoined,
-         membersleft,
-         message,
-         receipt,
-         lastdeliveredatupdate,
-         lastreadupdate,
-         messagerecall,
-         messageupdate,
-         */
+        /* 还有以下事件可以实现
+        infoupdated,
+        invited,
+        kicked,
+        lastdeliveredatupdate,
+        lastreadatupdate,
+        memberinfoupdated,
+        
+        blocked,
+        unblocked,
+        membersblocked,
+        membersunblocked,
+
+        muted,
+        unmuted,
+        membersmuted,
+        membersunmuted,
+
+        messagerecall,
+        messageupdate,
+        */
 
         if (callbacks.onMessage) {
           conversation.on('message', (message) => {
             dbg(`onMessage: ${message.constructor.name}`)
-            callbacks.onMessage(message)
+            callbacks.onMessage(message as ISignal)
           })
         }
         if (callbacks.onReceipt) {
@@ -199,34 +229,51 @@ export default class SignalService {
             callbacks.onDelivered()
           })
         }
-        if (callbacks.onMessageHistory) {
-          const msgIter = conversation.createMessagesIterator({})
-          msgIter.next().then((result) => {
-            callbacks.onMessageHistory(result.value)
-          }).catch(err => {
-            throw err
+
+        if (callbacks.onMembersJoined) {
+          conversation.on('membersjoined', (payload: {members: string[], invitedBy: string}) => {
+            callbacks.onMembersJoined(payload)
           })
         }
+
+        if (callbacks.onMembersLeft) {
+          conversation.on('membersleft', (payload: {members: string[], kickedBy: string}) => {
+            callbacks.onMembersLeft(payload)
+          })
+        }
+
         return new Room(conversation) as IRoom
       })
   }
 
-  leavelRoom(): Promise<void> {
+  /** 
+   * 离开信令房间
+   * @return {Promise<void>}
+   */
+  leaveRoom(): Promise<void> {
     if (!this._room) {
       dbg(`you are not in a room`)
-      return
+      return Promise.reject(`err_not_in_room`)
     }
-    this._room = null
     return this._room.quit()
-      .then(conversation => {
-        // Note: not pass conversation as parameter to promise chain
-      })
+    .then(conversation => {
+      this._room = null
+      // Note: don't pass conversation as parameter to promise chain
+    })
   }
 
+  /**
+   * 当前信令客户端是否登录状态
+   * @return {boolean}
+   */
   get isLoggedIn(): boolean {
-    return this._client && this._room !== null
+    return this._client !== null
   }
 
+  /**
+   * 获取当前信令房间
+   * @return {IRoom}
+   */
   get room(): IRoom {
     return this._room
   }
