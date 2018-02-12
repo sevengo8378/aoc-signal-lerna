@@ -1,9 +1,9 @@
 {
   "name": "aoc-signal-examples",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "private": true,
   "dependencies": {
-    "aoc-signal": "^1.0.7",
+    "aoc-signal": "^1.1.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-0": "^6.24.1",
