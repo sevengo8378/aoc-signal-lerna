@@ -22,6 +22,7 @@ build:lib:
   before_script:
     *INSTALL_DEPS  
   script:
+    - pwd
     - cd packages/aoc-signal
     - npm run build
   tags:
