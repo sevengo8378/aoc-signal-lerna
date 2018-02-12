@@ -52,7 +52,7 @@ signalService.login('Tom', callbacks)
 ## Documentation
 > This project use [typedoc](https://github.com/TypeStrong/typedoc) to auto generate API document.
 
-> visit [API document]()
+> visit [API document](http://soc-signal-api.sdclient.saybot.net/)
 
 
 
