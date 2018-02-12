@@ -43,3 +43,4 @@ jspm_packages
 # Lib
 lib
 build/
+typedoc/

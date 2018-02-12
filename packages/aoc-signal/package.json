@@ -12,8 +12,7 @@
     "lint": "tslint --format prose src/**/*.ts test/**/*.ts",
     "build": "tsc",
     "prepublish": "npm run clean && npm run lint && npm run test && npm run build",
-    "benchmark:receiver": "babel-node benchmark/receiver.js",
-    "benchmark:receiver:zx": "SERVER=wss://rtm-global-in.leancloud.cn babel-node benchmark/receiver.js"
+    "doc": "typedoc --out ./typedoc ./src"
   },
   "typings": "./lib/index.d.ts",
   "files": [
@@ -62,6 +61,7 @@
     "mocha": "^3.0.2",
     "rimraf": "^2.5.4",
     "tslint": "^5.9.1",
+    "typedoc": "^0.10.0",
     "typescript": "^2.7.1"
   }
 }

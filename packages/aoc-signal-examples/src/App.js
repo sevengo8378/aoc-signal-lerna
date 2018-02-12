@@ -198,7 +198,7 @@ class App extends Component {
     }
     this.autoSendTimer = setInterval(() => {
       const msg = `msg content ${this.state.samples.send.cnt + 1}`;
-      this.signalService.sendMsg(msg)
+      this.signalService.room.broadcastMsg(msg)
         .then(message => {
           this.showMsg(message);
         });
