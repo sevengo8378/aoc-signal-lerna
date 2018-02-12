@@ -66,7 +66,7 @@ deploy:lib:doc:
     - cd packages/aoc-signal
     - pwd
     - ls -l
-    - tar -czvf aoc-signal-doc.tar.gz typedoc && scp aoc-signal-doc.tar.gz ubuntu@192.168.50.148:/home/ubuntu/static-site && ssh ubuntu@192.168.50.148 'rm -rf static-site/aoc-signal-doc && mkdir -p static-site/aoc-signal-doc && tar -xzvf aoc-signal-doc.tar.gz -C ~/static-stie/aoc-signal-doc'
+    - tar -czvf aoc-signal-doc.tar.gz typedoc && scp aoc-signal-doc.tar.gz ubuntu@192.168.50.148:/home/ubuntu/static-site && ssh ubuntu@192.168.50.148 'rm -rf static-site/aoc-signal-doc && mkdir -p static-site/aoc-signal-doc && tar -xzvf static-site/aoc-signal-doc.tar.gz -C ~/static-stie/aoc-signal-doc'
   tags:
     - docker
   only:
