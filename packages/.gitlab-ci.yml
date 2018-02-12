@@ -1,0 +1,64 @@
+image: node:8.9.0
+
+installDeps:
+  stage: build
+  script: &INSTALL_DEPS
+    - cd packages/aoc-signal
+    - npm install --registry=https://repos.saybot.net/repository/alo7npm
+    - node --version
+
+cache:
+  key: "$CI_COMMIT_REF_NAME"    
+  paths:
+    - packages/aoc-signal/node_modules
+
+stages:
+  - build
+  - test
+  - deploy
+
+build:lib:
+  stage: build
+  before_script:
+    *INSTALL_DEPS  
+  script:
+    - cd packages/aoc-signal
+    - npm run build
+  tags:
+    - docker
+  only:
+    - master   
+
+lib:lint:
+  stage: test
+  before_script:
+    *INSTALL_DEPS  
+  script:
+    - cd packages/aoc-signal
+    - npm run lint
+  tags:
+    - docker
+  only:
+    - master          
+
+build:lib:doc:
+  stage: build
+  before_script:
+    *INSTALL_DEPS  
+  script:
+    - cd packages/aoc-signal
+    - npm run doc
+  tags:
+    - docker
+  only:
+    - master    
+
+deploy:lib:doc:
+  stage: deploy
+  script:
+    - cd packages/aoc-signal
+    - tar -czvf aoc-signal-doc.tar.gz typedoc && scp aoc-signal-doc.tar.gz ubuntu@192.168.50.148:/home/ubuntu/static-site && ssh ubuntu@192.168.50.148 'rm -rf static-site/aoc-signal-doc && mkdir -p static-site/aoc-signal-doc && tar -xzvf aoc-signal-doc.tar.gz -C ~/static-stie/aoc-signal-doc'
+  tags:
+    - docker
+  only:
+    - master        
