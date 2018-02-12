@@ -95,7 +95,7 @@ if(use_zx) {
 }
 const signalService = new SignalService(leancloudConfig);
 
-const onMessage = (message) => {
+const onSignal = (message) => {
   showMsg(message);
 };
 
@@ -142,7 +142,7 @@ signalService.login(userName, callbacks)
     d(`${userName} 创建IM client成功, role=${program.role}`);
     d(`${userName} 加入房间 ${roomProps.name}...`);
     const callbacks = {
-      onMessage: onMessage,
+      onSignal: onSignal,
       // onMessageHistory: onMessageHistory,
       onReceipt: onReceipt,
       onDelivered: onDelivered,

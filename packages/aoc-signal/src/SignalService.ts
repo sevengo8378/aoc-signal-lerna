@@ -93,7 +93,7 @@ export default class SignalService {
     },    
     signature?: ISignature, 
     roomSignature?: ISignature
-  ): Promise<void> {
+  ): Promise<SignalService> {
     const factory = signature && roomSignature ? {
       signatureFactory: (cid: string) => Promise.resolve(signature),
       conversationSignatureFactory: (cid: string) => Promise.resolve(roomSignature)
@@ -140,6 +140,7 @@ export default class SignalService {
           dbg('[reconnecterror] 重连失败')
           if (onReconnecterror) onReconnecterror()
         })
+        return this
       })
   }
 
@@ -171,7 +172,7 @@ export default class SignalService {
    * @param room.transient 暂态的聊天室（暂态类似聊天室,无人员上线,不能查询成员列表,没有成员加入离开通知,不支持邀请踢出）
    * @param room.unique 是否唯一对话，当其为 true 时，如果当前已经有相同成员的房间则直接返回该对话不再创建新的
    * @param callbacks 注册房间内回调函数
-   * @param callbacks.onMessage 接收到信令
+   * @param callbacks.onSignal 接收到信令
    * @param callbacks.onDelivered 有信令送达
    * @param callbacks.onMembersJoined 有成员进入房间
    * @param callbacks.onMembersLeft 有成员离开房间
@@ -186,7 +187,7 @@ export default class SignalService {
       unique: boolean,
     } | string,       
     callbacks: {
-      onMessage?: (signal: ISignal) => void,
+      onSignal?: (signal: ISignal) => void,
       // onReceipt?: Function,
       onDelivered?: () => void,
       onMembersJoined?: (payload: {members: string[], invitedBy: string}) => void
@@ -240,10 +241,10 @@ export default class SignalService {
         messageupdate,
         */
 
-        if (callbacks.onMessage) {
+        if (callbacks.onSignal) {
           conversation.on('message', (message) => {
             dbg(`onMessage: ${message.constructor.name}`)
-            callbacks.onMessage(message as ISignal)
+            callbacks.onSignal(message as ISignal)
           })
         }
         // if (callbacks.onReceipt) {

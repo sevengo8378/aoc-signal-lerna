@@ -1,25 +1,59 @@
-# Why? [![Build Status](https://travis-ci.org/Travelport-Ukraine/npm-module-boilerplate.svg?branch=master)](https://travis-ci.org/Travelport-Ukraine/npm-module-boilerplate)
-:page_with_curl: Boilerplate for npm/node module. Write with ES6 - have compatibility with all node versions.
+Javascript signal sdk for [AOC](https://git.saybot.net/kejian/aoc-desktop), this library is based on [js-realtime-sdk](https://github.com/leancloud/js-realtime-sdk).
 
-This boilerplate is for people who want write code using all ES6 features ( and stage-2 ) but also want/need backwards compatibility with old node versions. 
+## Dependencies
+* [leancloud-realtime](https://github.com/leancloud/js-realtime-sdk)
 
-# Features
-* Build with [Babel](https://babeljs.io). (ES6 -> ES5)
-* Test with [mocha](https://mochajs.org).
-* Cover with [istanbul](https://github.com/gotwarlost/istanbul).
-* Check with [eslint](eslint.org).
-* Deploy with [Travis](travis-ci.org).
+## Installation
+```shell
+npm install --save aoc-signal
+```
 
-# Commands
-- `npm run clean` - Remove `lib/` directory
-- `npm test` - Run tests. Tests can be written with ES6 (WOW!)
-- `npm test:watch` - You can even re-run tests on file changes!
-- `npm run cover` - Yes. You can even cover ES6 code.
-- `npm run lint` - We recommend using [airbnb-config](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb). It's fantastic.
-- `npm run test:examples` - We recommend writing examples on pure JS for better understanding module usage.
-- `npm run build` - Do some magic with ES6 to create ES5 code.
-- `npm run prepublish` - Hook for npm. Do all the checks before publishing you module.
+## Usage
+```javascript
+var signalService = new SignalService({
+    appId: 'xxxxxx',
+    appKey: 'xxxxxx'
+});
 
-# Installation
-Just clone this repo and remove `.git` folder.
+const callbacks = {
+    onDisconnect: () => {
+        console.log('[disconnect] 服务器连接已断开');
+    },
+    onReconnect: () => {
+        console.log('[reconnect] 重连成功');
+    },
+    onReconnecterror: () => {
+        console.log('[reconnecterror] 重连失败');
+    }
+};
+
+const testRoom = {
+    name: 'testroom',
+    members: ['Tom', 'Jerry']
+};
+
+const roomCallbacks = {
+    onSignal: (signal) => {
+
+    }
+};
+signalService.login('Tom', callbacks)
+  .then(servie => {
+      return service.joinRoom(testRoom, roomCallbacks);
+  })    
+  .then(room => {
+      return room.broadcastMsg('hello');
+  })
+  .then(signal => {
+      console.log(`send message success`);
+  })
+```
+
+## Documentation
+> This project use [typedoc](https://github.com/TypeStrong/typedoc) to auto generate API document.
+
+> visit [API document]()
+
+
+
 

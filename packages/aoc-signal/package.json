@@ -19,23 +19,12 @@
     "lib",
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Travelport-Ukraine/npm-module-boilerplate.git"
-  },
-  "keywords": [
-    "boilerplate",
-    "npm",
-    "module",
-    "node",
-    "javascript"
-  ],
   "author": "byrne.liang@alo7.com",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Travelport-Ukraine/npm-module-boilerplate/issues"
+  "homepage": "https://git.saybot.net/byrne.liang/aoc-signal",
+  "devEngines": {
+    "node": "8.x"
   },
-  "homepage": "https://github.com/Travelport-Ukraine/npm-module-boilerplate#readme",
   "dependencies": {
     "debug": "^3.1.0",
     "immutable": "^3.8.2",

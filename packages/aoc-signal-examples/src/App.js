@@ -71,7 +71,6 @@ class App extends Component {
       onReconnecterror: () => {
         this.showLog('[reconnecterror] 重连失败');
       },
-      // onMessage: this.onMessage,
     };
     const {id, ...restRoomProps} = this.state.roomProps;
     let room = restRoomProps;
@@ -84,8 +83,7 @@ class App extends Component {
         this.showLog(`${this.state.userName} 登录成功`);
         this.showLog(`${this.state.userName} 加入房间 ${roomLogName}...`);
         const callbacks = {
-          onMessage: this.onMessage,
-          // onMessageHistory: this.onMessageHistory,
+          onSignal: this.onSignal,
           onReceipt: this.onReceipt,
           onDelivered: this.onDelivered,
           onMembersJoined: this.onMembersJoined,
@@ -118,7 +116,7 @@ class App extends Component {
     }
   }
 
-  onMessage = (message) => {
+  onSignal = (message) => {
     if(message instanceof ChatSignal) {
       this.showMsg(message);
     } else if (message instanceof CmdSignal) {
