@@ -97,7 +97,7 @@ export default class SignalService {
     const factory = signature && roomSignature ? {
       signatureFactory: (cid: string) => Promise.resolve(signature),
       conversationSignatureFactory: (cid: string) => Promise.resolve(roomSignature)
-    } : null
+    } : {}
     
     return this._service.createIMClient(clientId, factory)
       .then((c) => {

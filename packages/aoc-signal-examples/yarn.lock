@@ -130,9 +130,9 @@ anymatch@^1.3.0:
     micromatch "^2.1.5"
     normalize-path "^2.0.0"
 
-aoc-signal@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.npmjs.org/aoc-signal/-/aoc-signal-1.0.7.tgz#642cb3926b010d2e909ec9281a4b4b92a3eaad09"
+aoc-signal@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/aoc-signal/-/aoc-signal-1.1.0.tgz#0f750c9b8863ec0dd61ea752bbf1106d72ab2006"
   dependencies:
     debug "^3.1.0"
     immutable "^3.8.2"
