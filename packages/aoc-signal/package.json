@@ -1,6 +1,6 @@
 {
   "name": "aoc-signal",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "Javascript signal sdk for AOC, this library is based on js-realtime-sdk.",
   "main": "./lib/index.js",
   "scripts": {
