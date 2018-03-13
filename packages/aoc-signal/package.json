@@ -28,7 +28,7 @@
   "dependencies": {
     "debug": "^3.1.0",
     "immutable": "^3.8.2",
-    "leancloud-realtime": "next"
+    "leancloud-realtime": "4.0.0-beta.4"
   },
   "devDependencies": {
     "@types/debug": "^0.0.30",
